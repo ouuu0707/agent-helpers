@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://esm.run https://esm.sh https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob:; connect-src 'self' https: blob:; font-src 'self' data:;">
+  <title>Agent邮件案件处理助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      padding: 16px;
+      color: #222;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin: 14px 0 18px;
+      color: #333;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 12px 24px;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .tab.active {
+      background: #07c160;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .draft-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow: auto;
+      padding: 6px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+    .draft-tab {
+      border: 1px solid #eee;
+      background: white;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .draft-tab.active {
+      border-color: #07c160;
+      background: #e8f7ef;
+    }
+    .muted {
+      color: #666;
+      font-size: 12px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .row > * {
+      flex: 1;
+      min-width: 240px;
+    }
+    .row .tight {
+      flex: 0 0 auto;
+      min-width: unset;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 12px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    input[type="number"], input[type="date"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      background: white;
+    }
+    .help {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background-color: #07c160;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #06ad56;
+    }
+    .btn-primary:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background-color: #ff9e80;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background-color: #ff8a65;
+    }
+    .btn-danger {
+      background-color: #f44336;
+      color: white;
+    }
+    .btn-danger:hover {
+      background-color: #e53935;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .checklist {
+      margin: 16px 0;
+      padding-left: 20px;
+    }
+    .checklist li {
+      margin-bottom: 8px;
+    }
+    .section {
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    .copy-btn {
+      margin-top: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .output-grid textarea {
+      height: 220px;
+      margin-bottom: 8px;
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .history-table th, .history-table td {
+      border: 1px solid #eee;
+      padding: 12px;
+      text-align: left;
+    }
+    .history-table th {
+      background-color: #f5f5f5;
+    }
+    .filter {
+      margin-bottom: 16px;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      background: white;
+    }
+    .history-table {
+      min-width: 980px;
+      margin-top: 0;
+      border: none;
+    }
+    .history-table th, .history-table td {
+      border: none;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: #f6f6f6;
+      border-radius: 10px;
+      border: 1px solid #eee;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      background: rgba(17, 17, 17, 0.92);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      max-width: min(720px, calc(100vw - 24px));
+      z-index: 999;
+      display: none;
+    }
+    .error-box {
+      display: none;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ffd3d3;
+      background: #fff3f3;
+      color: #b00020;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+    }
+    dialog {
+      width: min(980px, calc(100vw - 24px));
+      border: none;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 12px 50px rgba(0,0,0,0.2);
+    }
+    dialog::backdrop {
+      background: rgba(0,0,0,0.45);
+    }
+    .dialog-body {
+      padding: 16px;
+    }
+    .dialog-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .dialog-title {
+      font-weight: 700;
+    }
+    .dialog-close {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+    .dialog-close:hover {
+      background: #f1f1f1;
+    }
+    @media (max-width: 720px) {
+      body { padding: 10px; }
+      .tab { padding: 10px 14px; font-size: 14px; }
+      .card { padding: 14px; }
+      textarea { font-size: 14px; }
+      input[type="text"], input[type="password"], input[type="number"], input[type="date"], select { font-size: 14px; }
+      .output-grid { grid-template-columns: 1fr; }
+      .row > * { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="header">Agent邮件案件处理助手</h1>
+
+    <div id="global-error" class="error-box"></div>
+
+    <!-- Tab切换栏 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="quick-reply">邮件生成</button>
+      <button class="tab" data-tab="case-handle">案件处理</button>
+      <button class="tab" data-tab="template">模板管理</button>
+      <button class="tab" data-tab="history">案件管理</button>
+      <button class="tab" data-tab="ai-config">AI配置</button>
+    </div>
+
+    <!-- 快速回复页 -->
+    <div class="tab-content active" id="quick-reply">
+      <div class="card">
+        <div class="card-title">输入需求，一键生成中英文邮件</div>
+        <textarea id="reply-input" placeholder="比如：我要回复客户，告诉他我已经收到他的邮件，会尽快处理"></textarea>
+
+        <div class="row">
+          <div>
+            <div class="pill">
+              <input id="use-tone" type="checkbox" checked>
+              <label for="use-tone">使用模板语气参考</label>
+            </div>
+            <div class="help">开启后会把你选中的模板作为“语气/措辞参考”，不逐字照抄。</div>
+          </div>
+          <div>
+            <label>参考模板（可多选）</label>
+            <select id="tone-template-select" multiple size="4"></select>
+            <div class="help">不选择时默认使用所有“用于语气学习”的模板。</div>
+          </div>
+        </div>
+
+        <button id="generate-reply" class="btn btn-primary">生成中英文邮件</button>
+
+        <div id="reply-output" class="section" style="display:none; margin-top:16px;">
+          <div class="output-grid">
+            <div>
+              <div class="section-title">中文邮件（可编辑）</div>
+              <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
+              <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
+            </div>
+            <div>
+              <div class="section-title">英文邮件（可编辑）</div>
+              <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
+              <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 案件处理页 -->
+    <div class="tab-content" id="case-handle">
+      <div class="card">
+        <div class="card-title">粘贴客户的英文案件内容</div>
+        <div class="row">
+          <div>
+            <label>案件工作台（可并行）</label>
+            <div id="draft-tabs" class="draft-tabs"></div>
+            <div class="muted" id="draft-hint">切换案件不会丢进度：所有输入与AI结果都会自动保存到本地。</div>
+          </div>
+          <div class="tight" style="min-width:unset;">
+            <label>状态</label>
+            <select id="case-status">
+              <option value="processing">🟡处理中</option>
+              <option value="waiting_dev">🔵等待开发</option>
+              <option value="waiting_customer">🟣等待客户</option>
+              <option value="resolved">🟢已解决</option>
+              <option value="closed">⚫已结案</option>
+            </select>
+          </div>
+          <div class="tight" style="min-width:unset; display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="new-draft" class="btn btn-secondary copy-btn">新建案件</button>
+            <button id="rename-draft" class="btn btn-secondary copy-btn">重命名</button>
+            <button id="close-draft" class="btn btn-danger copy-btn">关闭</button>
+          </div>
+        </div>
+        <textarea id="case-input" placeholder="把客户发来的英文邮件/案件内容粘贴到这里"></textarea>
+        <button id="process-case" class="btn btn-primary">AI处理案件</button>
+        
+        <div id="case-result" style="display: none;">
+          <div class="section">
+            <div class="section-title">案件摘要</div>
+            <div class="row">
+              <div>
+                <label>分类</label>
+                <input type="text" id="case-category" placeholder="如：支付问题/登录问题/数据问题/功能异常/其他">
+              </div>
+              <div>
+                <label>优先级</label>
+                <select id="case-priority">
+                  <option value="">请选择</option>
+                  <option value="高">高</option>
+                  <option value="中">中</option>
+                  <option value="低">低</option>
+                </select>
+              </div>
+            </div>
+            <label>客户诉求（一句话）</label>
+            <input type="text" id="case-request" placeholder="一句话总结客户核心诉求">
+          </div>
+          <div class="section">
+            <div class="section-title">案件自查步骤</div>
+            <ul id="checklist" class="checklist"></ul>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">给开发的转发邮件/话术（中文，可编辑）</div>
+            <textarea id="dev-msg" placeholder="生成后会出现在这里"></textarea>
+            <button class="btn btn-secondary copy-btn" data-copy-target="dev-msg">复制</button>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">给客户的英文回复（可编辑）</div>
+            <textarea id="client-msg-en" placeholder="生成后会出现在这里"></textarea>
+            <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
+
+            <div class="section-title" style="margin-top: 16px;">中文翻译（可编辑）</div>
+            <textarea id="client-msg-zh" placeholder="生成后会出现在这里"></textarea>
+            <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
+          </div>
+
+          <div class="section">
+            <div class="section-title">客户后续回复（粘贴后生成对应回复 + 开发沟通话术）</div>
+            <textarea id="customer-followup" placeholder="把客户后续回复粘贴到这里"></textarea>
+            <button id="generate-followup" class="btn btn-primary">生成后续回复</button>
+            <div id="followup-output" style="display:none; margin-top:12px;">
+              <div class="output-grid">
+                <div>
+                  <div class="section-title">后续：给客户英文回复（可编辑）</div>
+                  <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
+                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
+                </div>
+                <div>
+                  <div class="section-title">后续：中文翻译（可编辑）</div>
+                  <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
+                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
+                </div>
+              </div>
+              <div style="margin-top:12px;">
+                <div class="section-title">后续：给开发的沟通话术（中文，可编辑）</div>
+                <textarea id="followup-dev-zh" placeholder="生成后会出现在这里"></textarea>
+                <button class="btn btn-secondary copy-btn" data-copy-target="followup-dev-zh">复制</button>
+              </div>
+              <div style="margin-top:12px;" id="next-action-section">
+                <div class="section-title">下一步行动</div>
+                <input type="text" id="next-action" readonly style="background:#f9f9f9;">
+              </div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">结案（自动生成结构化总结，可编辑后保存）</div>
+            <button id="ai-summarize-case" class="btn btn-secondary">AI生成结案总结</button>
+            <textarea id="solution-input" placeholder="请输入解决方案："></textarea>
+            <textarea id="remark-input" placeholder="请输入备注："></textarea>
+            <textarea id="root-cause-input" placeholder="请输入根本原因："></textarea>
+            <div class="row">
+              <button id="auto-fill-archive" class="btn btn-secondary">一键带入归档内容</button>
+              <button id="finish-case" class="btn btn-primary">一键归档到历史记录</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模板管理页 -->
+    <div class="tab-content" id="template">
+      <div class="card">
+        <div class="card-title">添加回复模板</div>
+        <input type="text" id="template-name" placeholder="模板名称">
+        <textarea id="template-content" placeholder="模板内容"></textarea>
+        <div class="pill" style="margin-bottom:12px;">
+          <input id="template-tone" type="checkbox" checked>
+          <label for="template-tone">用于语气学习</label>
+        </div>
+        <button id="add-template" class="btn btn-primary">添加模板</button>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">我的模板</div>
+        <div class="row">
+          <div>
+            <label>导入模板（JSON）</label>
+            <input id="import-templates" type="file" accept="application/json">
+            <div class="help">支持导入本应用导出的JSON文件。</div>
+          </div>
+          <div class="tight" style="min-width:unset;">
+            <button id="export-templates" class="btn btn-secondary">导出模板JSON</button>
+          </div>
+        </div>
+        <div id="template-list"></div>
+      </div>
+    </div>
+
+    <!-- 历史记录页 -->
+    <div class="tab-content" id="history">
+      <div class="card">
+        <div class="card-title">案件列表</div>
+        <div class="filter">
+          <div class="row">
+            <div>
+              <label>搜索</label>
+              <input type="text" id="search-filter" placeholder="按案件内容/解决方案/备注/根因搜索">
+            </div>
+            <div>
+              <label>时间范围</label>
+              <select id="time-filter">
+                <option value="all">全部</option>
+                <option value="7">近7天</option>
+                <option value="30">近30天</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div id="custom-range" style="display:none;">
+              <label>自定义范围</label>
+              <div class="row" style="margin-bottom:0;">
+                <input type="date" id="from-date">
+                <input type="date" id="to-date">
+              </div>
+            </div>
+            <div class="tight" style="min-width:unset;">
+              <button id="export-csv" class="btn btn-secondary">导出CSV</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th style="width:80px;">状态</th>
+                <th style="width:90px;">分类</th>
+                <th style="width:60px;">优先级</th>
+                <th style="width:140px;">时间</th>
+                <th>案件描述</th>
+                <th>解决方案</th>
+                <th>根本原因</th>
+                <th style="width:140px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="history-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="ai-config">
+      <div class="card">
+        <div class="card-title">AI配置（仅存本地 localStorage）</div>
+        <div class="row">
+          <div>
+            <label>模式</label>
+            <select id="ai-mode">
+              <option value="online">在线（Cloudflare Workers AI）</option>
+              <option value="auto">自动（优先在线，失败回退离线）</option>
+              <option value="offline">离线（无需 Key）</option>
+            </select>
+          </div>
+          <div>
+            <label>在线提供商</label>
+            <select id="online-provider">
+              <option value="cloudflare_workers_ai">Cloudflare Workers AI（推荐）</option>
+              <option value="openai_compat_direct">OpenAI兼容（浏览器直连）</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="cloudflare-online" style="display:block;">
+          <div class="row">
+            <div>
+              <label>Cloudflare 模型</label>
+              <input type="text" id="cf-model" placeholder="比如：@cf/meta/llama-3.1-8b-instruct">
+              <div class="help">需要在 Cloudflare Pages 项目中绑定 AI（使 Functions 可访问 env.AI）。</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="openai-online" style="display:none;">
+          <div class="row">
+            <div>
+              <label>Base URL</label>
+              <input type="text" id="ai-base-url" placeholder="比如：https://api.moonshot.cn/v1">
+            </div>
+            <div>
+              <label>模型</label>
+              <input type="text" id="ai-model" placeholder="比如：moonshot-v1-8k / doubao-lite-32k">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>API Key</label>
+              <input type="password" id="api-key" placeholder="输入你的API Key">
+              <div class="help">纯前端直连会暴露 Key，请用权限受限/可随时撤销的 Key。</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="offline-panel" style="display:block;">
+          <div class="row">
+            <div>
+              <label>离线模型（首次会下载，之后可离线使用）</label>
+              <select id="offline-model">
+                <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama-3.2 1B（推荐，约 0.9GB）</option>
+                <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2 3B（更好，约 2.3GB）</option>
+                <option value="SmolLM2-360M-Instruct-q0f16-MLC">SmolLM2 360M（更小，更快）</option>
+              </select>
+              <div id="offline-status" class="help">离线模型：未加载</div>
+            </div>
+          </div>
+          <div class="row">
+            <button id="offline-load" class="btn btn-secondary">加载离线模型</button>
+            <button id="offline-unload" class="btn btn-secondary">卸载离线模型</button>
+          </div>
+          <div class="help">离线模式使用 WebGPU（推荐 Chrome/Edge）。部分设备可能不支持或内存不足。</div>
+          <div class="row" style="margin-top:8px;">
+            <div>
+              <label>HuggingFace 镜像（国内用户必填）</label>
+              <select id="hf-mirror">
+                <option value="">不使用镜像（直连 huggingface.co）</option>
+                <option value="hf-mirror.com" selected>hf-mirror.com（国内推荐）</option>
+              </select>
+              <div class="help">国内网络无法访问 huggingface.co，需使用镜像下载模型文件。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>温度 (temperature)</label>
+            <input type="number" id="ai-temperature" min="0" max="2" step="0.1">
+          </div>
+          <div>
+            <label>最大输出 (max_tokens)</label>
+            <input type="number" id="ai-max-tokens" min="128" max="8192" step="64">
+          </div>
+        </div>
+        <label>系统提示词（可编辑）</label>
+        <textarea id="system-prompt" style="height:140px;"></textarea>
+        <div class="row">
+          <button id="save-config" class="btn btn-primary">保存配置</button>
+          <button id="test-ai" class="btn btn-secondary">测试连接</button>
+        </div>
+        <div class="help">自动模式会优先走 Cloudflare Workers AI（同源 /api/ai），不可用时回退离线；你也可以切到“在线（OpenAI兼容直连）”。</div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="case-dialog">
+    <div class="dialog-header">
+      <div class="dialog-title" id="case-dialog-title">案件详情</div>
+      <button class="dialog-close" id="case-dialog-close" aria-label="关闭">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="muted" id="case-view-meta" style="margin-bottom:12px;"></div>
+      <div class="section">
+        <div class="section-title">案件描述</div>
+        <textarea id="case-view-description" style="height:160px;"></textarea>
+        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-description">复制</button>
+      </div>
+      <div class="section" id="case-view-process-section" style="display:none;">
+        <div class="section-title">完整处理过程</div>
+        <div class="section">
+          <div class="section-title">原始邮件/案件内容</div>
+          <textarea id="case-view-original" style="height:160px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-original">复制</button>
+        </div>
+        <div class="section">
+          <div class="section-title">自查步骤</div>
+          <textarea id="case-view-checklist" style="height:120px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-checklist">复制</button>
+        </div>
+        <div class="section">
+          <div class="section-title">给开发话术（最终版）</div>
+          <textarea id="case-view-dev" style="height:140px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-dev">复制</button>
+        </div>
+        <div class="section">
+          <div class="section-title">给客户英文回复（最终版）</div>
+          <textarea id="case-view-client-en" style="height:140px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-en">复制</button>
+        </div>
+        <div class="section">
+          <div class="section-title">中文翻译（最终版）</div>
+          <textarea id="case-view-client-zh" style="height:140px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-zh">复制</button>
+        </div>
+        <div class="section" id="case-view-followup-section" style="display:none;">
+          <div class="section-title">客户后续与对应回复</div>
+          <textarea id="case-view-followup" style="height:180px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-followup">复制</button>
+        </div>
+        <div class="section">
+          <div class="section-title">AI 中间结果（JSON）</div>
+          <textarea id="case-view-ai-log" style="height:220px;"></textarea>
+          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-ai-log">复制</button>
+        </div>
+      </div>
+      <div class="section" id="case-view-timeline-section" style="display:none;">
+        <div class="section-title">Timeline</div>
+        <textarea id="case-view-timeline" style="height:300px;" readonly></textarea>
+        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-timeline">复制</button>
+      </div>
+      <div class="section">
+        <div class="section-title">解决方案</div>
+        <textarea id="case-view-solution" style="height:120px;"></textarea>
+        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-solution">复制</button>
+      </div>
+      <div class="section">
+        <div class="section-title">根本原因</div>
+        <textarea id="case-view-rootcause" style="height:120px;"></textarea>
+        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-rootcause">复制</button>
+      </div>
+      <div class="section">
+        <div class="section-title">备注</div>
+        <textarea id="case-view-remark" style="height:120px;"></textarea>
+        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-remark">复制</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const STORAGE_KEYS = {
+      templates: 'templates',
+      cases: 'cases',
+      aiConfig: 'aiConfig',
+      caseDrafts: 'caseDrafts',
+      activeDraftId: 'activeDraftId'
+    }
+
+    const DEFAULT_CF_MODEL = '@cf/meta/llama-3.1-8b-instruct'
+    const DEFAULT_OFFLINE_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC'
+
+    const CASE_STATUS = {
+      processing: '🟡处理中',
+      waiting_dev: '🔵等待开发',
+      waiting_customer: '🟣等待客户',
+      resolved: '🟢已解决',
+      closed: '⚫已结案'
+    }
+
+    const DEFAULT_SYSTEM_PROMPT = [
+      '你是一个专业的技术支持客服 Agent。',
+      '目标：根据用户输入生成清晰、准确、简洁、礼貌的中英文邮件与案件处理文案。',
+      '要求：不编造事实；不输出与请求无关的内容；必要时明确需要的信息；语言自然、语气符合用户风格参考。',
+      '输出：按用户指定的结构输出。'
+    ].join('\n')
+
+    function safeJsonParse(str, fallback) {
+      if (typeof str !== 'string' || !str.trim()) return fallback
+      try { return JSON.parse(str) } catch { return fallback }
+    }
+
+    function nowIso() {
+      return new Date().toISOString()
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const num = Number(value)
+      if (!Number.isFinite(num)) return fallback
+      return Math.min(max, Math.max(min, num))
+    }
+
+    function normalizeBaseUrl(url) {
+      const s = String(url || '').trim()
+      return s.endsWith('/') ? s.slice(0, -1) : s
+    }
+
+    function setGlobalError(message) {
+      const box = document.getElementById('global-error')
+      if (!message) {
+        box.style.display = 'none'
+        box.textContent = ''
+        return
+      }
+      box.style.display = 'block'
+      box.textContent = String(message)
+    }
+
+    let toastTimer = null
+    function toast(message) {
+      const el = document.getElementById('toast')
+      el.textContent = String(message || '')
+      el.style.display = 'block'
+      clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => { el.style.display = 'none' }, 2200)
+    }
+
+    async function copyToClipboard(text) {
+      const value = String(text ?? '')
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(value)
+          return true
+        } catch {}
+      }
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = value
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        ta.style.top = '0'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        const ok = document.execCommand('copy')
+        document.body.removeChild(ta)
+        return ok
+      } catch {
+        return false
+      }
+    }
+
+    function downloadTextFile(filename, content, mime) {
+      const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+
+    function extractFirstJsonObject(text) {
+      const s = String(text || '')
+      const start = s.indexOf('{')
+      if (start === -1) return null
+      let depth = 0
+      for (let i = start; i < s.length; i++) {
+        const ch = s[i]
+        if (ch === '{') depth++
+        if (ch === '}') depth--
+        if (depth === 0) {
+          const candidate = s.slice(start, i + 1)
+          try { return JSON.parse(candidate) } catch { return null }
+        }
+      }
+      return null
+    }
+
+    function pickToneTemplates(allTemplates, selectedIds) {
+      const byId = new Map(allTemplates.map(t => [t.id, t]))
+      const picked = Array.isArray(selectedIds) && selectedIds.length
+        ? selectedIds.map(id => byId.get(id)).filter(Boolean)
+        : allTemplates.filter(t => t.useForTone)
+      return picked.slice(0, 12)
+    }
+
+    function buildToneReference(templatesForTone) {
+      if (!templatesForTone.length) return ''
+      const parts = templatesForTone.map(t => {
+        const name = String(t.name || '').slice(0, 80)
+        const content = String(t.content || '').trim().slice(0, 1200)
+        return `【${name}】\n${content}`
+      })
+
+      // 分析模板共同特点
+      const allContent = templatesForTone.map(t => t.content).join('\n')
+      const features = []
+      // 开头习惯
+      const firstLines = templatesForTone.map(t => String(t.content || '').split('\n')[0]).filter(Boolean)
+      if (firstLines.length) features.push(`- 开头习惯：${firstLines.join(' / ')}`)
+      // 结尾习惯
+      const lastLines = templatesForTone.map(t => { const lines = String(t.content || '').split('\n'); return lines[lines.length - 1] }).filter(Boolean)
+      if (lastLines.length) features.push(`- 结尾习惯：${lastLines.join(' / ')}`)
+      // 句长
+      const avgLen = Math.round(allContent.length / templatesForTone.length)
+      features.push(`- 平均模板长度：${avgLen}字符`)
+      // 正式程度
+      const formalWords = ['sincerely', 'regards', 'respectfully', 'dear', ' respectfully', '敬启', '此致', '顺颂']
+      const formalCount = formalWords.reduce((n, w) => n + (allContent.toLowerCase().split(w).length - 1), 0)
+      features.push(`- 正式程度：${formalCount > 2 ? '正式' : formalCount > 0 ? '较正式' : '轻松'}`)
+
+      return [
+        '以下是用户的个人回复模板（语气/措辞/风格参考）：',
+        parts.join('\n\n'),
+        '模板风格总结：',
+        features.join('\n'),
+        '写作要求：',
+        '1. 精准模仿用户的语气风格：正式程度、用词偏好、句式长短、开头结尾习惯',
+        '2. 参考模板的措辞习惯，但不要逐字照抄，根据当前案件内容灵活调整',
+        '3. 不要凭空添加未提及的承诺、时间点或信息',
+        '4. 保持与模板一致的礼貌程度和专业度',
+        '5. 如果模板中有固定的开头/结尾用语（如 Best regards），请沿用'
+      ].join('\n')
+    }
+
+    function buildMessages(systemPrompt, toneReference, userPrompt) {
+      const messages = []
+      const sys = String(systemPrompt || '').trim()
+      if (sys) messages.push({ role: 'system', content: sys })
+      const tone = String(toneReference || '').trim()
+      if (tone) messages.push({ role: 'system', content: tone })
+      messages.push({ role: 'user', content: String(userPrompt || '').trim() })
+      return messages
+    }
+
+    const offlineState = {
+      engine: null,
+      modelId: null,
+      loading: null
+    }
+
+    function setOfflineStatus(message) {
+      const el = document.getElementById('offline-status')
+      if (!el) return
+      el.textContent = String(message || '')
+    }
+
+    async function checkWebGPU() {
+      if (!navigator.gpu) {
+        throw new Error('当前浏览器不支持 WebGPU，离线模式需要 WebGPU 支持。请使用最新版 Chrome（113+）或 Edge（113+），并确保已启用 WebGPU。')
+      }
+      try {
+        const adapter = await navigator.gpu.requestAdapter()
+        if (!adapter) {
+          throw new Error('无法获取 GPU 适配器，可能被浏览器或系统策略阻止。请检查：1) 浏览器设置中是否启用了 WebGPU；2) 显卡驱动是否为最新；3) 是否在无头/虚拟化环境中运行。')
+        }
+      } catch (err) {
+        if (err.message.includes('WebGPU') || err.message.includes('GPU 适配器')) throw err
+        throw new Error('WebGPU 初始化失败：' + err.message)
+      }
+    }
+
+    async function importWebLLM() {
+      // 锁定已知可用的版本，避免 CDN 加载不兼容的最新版
+      const urls = [
+        'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.73/+esm',
+        'https://esm.run/@mlc-ai/web-llm@0.2.73',
+        'https://esm.sh/@mlc-ai/web-llm@0.2.73',
+        'https://unpkg.com/@mlc-ai/web-llm@0.2.73?module'
+      ]
+      let lastErr = null
+      for (const url of urls) {
+        try {
+          const mod = await import(url)
+          if (mod && (mod.CreateMLCEngine || mod.CreateEngine)) return mod
+          lastErr = new Error(`CDN 返回的模块缺少 CreateMLCEngine/CreateEngine 导出（URL: ${url}）`)
+        } catch (err) {
+          lastErr = err
+        }
+      }
+      throw lastErr || new Error('无法加载离线推理依赖')
+    }
+
+    async function loadOfflineEngine(modelId) {
+      if (offlineState.engine && offlineState.modelId === modelId) return offlineState.engine
+      if (offlineState.loading) return offlineState.loading
+
+      offlineState.loading = (async () => {
+        const selected = String(modelId || '').trim() || DEFAULT_OFFLINE_MODEL
+        setOfflineStatus('离线模型：检查环境...')
+        try {
+          if (!navigator.onLine) {
+            throw new Error('当前处于离线状态：首次加载需要联网下载离线运行库和模型文件；完成一次加载后可离线使用')
+          }
+          await checkWebGPU()
+          setOfflineStatus('离线模型：加载运行库...')
+          const webllm = await importWebLLM()
+
+          // 兼容新旧 API：CreateMLCEngine（v0.2+）或 CreateEngine（旧版）
+          const createEngine = webllm.CreateMLCEngine || webllm.CreateEngine
+          if (!createEngine) {
+            throw new Error('加载的 web-llm 库不包含引擎创建函数，请刷新页面重试或更换网络')
+          }
+
+          setOfflineStatus('离线模型：下载模型文件（0%）...')
+
+          // HuggingFace 镜像：国内网络无法访问 huggingface.co，需通过 fetch 拦截重定向到镜像
+          const cfg = getAiConfig()
+          const hfMirror = cfg.hfMirror
+          let patchedFetch = null
+          if (hfMirror) {
+            patchedFetch = globalThis.fetch
+            globalThis.fetch = function(input, init) {
+              let url = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : String(input))
+              if (url.includes('huggingface.co')) {
+                url = url.replace(/huggingface\.co/g, hfMirror)
+                input = url
+              }
+              return patchedFetch.call(globalThis, input, init)
+            }
+          }
+
+          try {
+            const engine = await createEngine(selected, {
+              initProgressCallback: (p) => {
+                const percent = Math.round((Number(p?.progress || 0) * 100) || 0)
+                const text = p?.text || ''
+                setOfflineStatus(`离线模型：${text || '下载中'}（${percent}%）`)
+              }
+            })
+            offlineState.engine = engine
+            offlineState.modelId = selected
+            setOfflineStatus('离线模型：已就绪')
+            return engine
+          } finally {
+            // 恢复原始 fetch
+            if (patchedFetch) {
+              globalThis.fetch = patchedFetch
+            }
+          }
+        } catch (err) {
+          offlineState.engine = null
+          offlineState.modelId = null
+          setOfflineStatus('离线模型：加载失败')
+          const msg = String(err?.message || err || '离线模型加载失败')
+          if (/Failed to fetch dynamically imported module/i.test(msg)) {
+            throw new Error('离线依赖加载失败：网络无法访问依赖CDN（jsdelivr/esm.run/esm.sh/unpkg）或被浏览器策略拦截。请确认当前网络可访问这些域名，或更换网络后重试。')
+          }
+          if (/webgpu/i.test(msg) || /gpu/i.test(msg) || /adapter/i.test(msg)) {
+            throw new Error('离线模式初始化失败：可能不支持 WebGPU（建议使用最新版 Chrome/Edge），或设备资源不足')
+          }
+          if (/model/i.test(msg) && (/not found/i.test(msg) || /unsupported/i.test(msg))) {
+            throw new Error(`离线模型 "${modelId}" 不可用：${msg}。请在AI配置中选择其他模型后重试。`)
+          }
+          // 网络下载失败的通用提示
+          if (/failed to fetch/i.test(msg) || /networkerror/i.test(msg) || /load failed/i.test(msg)) {
+            const mirrorHint = hfMirror
+              ? `已使用镜像 ${hfMirror}，但仍下载失败。请检查镜像是否可用，或尝试切换镜像/直连。`
+              : '国内网络可能无法访问 huggingface.co，请在AI配置中开启 HuggingFace 镜像（hf-mirror.com）后重试。'
+            throw new Error(`离线模型下载失败：${msg}。${mirrorHint}`)
+          }
+          throw new Error(msg)
+        } finally {
+          offlineState.loading = null
+        }
+      })()
+
+      return offlineState.loading
+    }
+
+    function unloadOfflineEngine() {
+      try {
+        if (offlineState.engine && typeof offlineState.engine.terminate === 'function') {
+          offlineState.engine.terminate()
+        }
+      } catch {}
+      offlineState.engine = null
+      offlineState.modelId = null
+      offlineState.loading = null
+      setOfflineStatus('离线模型：未加载')
+    }
+
+    function getAiConfig() {
+      const raw = safeJsonParse(localStorage.getItem(STORAGE_KEYS.aiConfig), null)
+      const mode = raw?.mode || 'online'
+      const onlineProvider = raw?.onlineProvider || 'cloudflare_workers_ai'
+      return {
+        mode,
+        onlineProvider,
+        cfModel: String(raw?.cfModel || DEFAULT_CF_MODEL).trim(),
+        offlineModel: String(raw?.offlineModel || DEFAULT_OFFLINE_MODEL).trim(),
+        hfMirror: String(raw?.hfMirror || '').trim(),
+        baseUrl: normalizeBaseUrl(raw?.baseUrl || ''),
+        model: String(raw?.model || '').trim(),
+        apiKey: String(raw?.apiKey || '').trim(),
+        systemPrompt: String(raw?.systemPrompt || DEFAULT_SYSTEM_PROMPT),
+        temperature: clampNumber(raw?.temperature, 0, 2, 0.7),
+        maxTokens: clampNumber(raw?.maxTokens, 128, 8192, 2048)
+      }
+    }
+
+    function setAiConfig(next) {
+      localStorage.setItem(STORAGE_KEYS.aiConfig, JSON.stringify(next))
+    }
+
+    async function callCloudflareWorkersAI(messages, cfg) {
+      const payload = JSON.stringify({
+        provider: 'cloudflare_workers_ai',
+        model: cfg.cfModel || DEFAULT_CF_MODEL,
+        messages,
+        temperature: cfg.temperature,
+        max_tokens: cfg.maxTokens
+      })
+
+      async function doPost(url, timeoutMs) {
+        const controller = new AbortController()
+        const t = setTimeout(() => controller.abort(), timeoutMs)
+        const init = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          redirect: 'manual',
+          signal: controller.signal
+        }
+
+        try {
+          let response = await fetch(url, init)
+          const redirectCodes = new Set([301, 302, 303, 307, 308])
+          if (redirectCodes.has(response.status)) {
+            const loc = response.headers.get('Location')
+            if (loc) {
+              const nextUrl = new URL(loc, new URL(url, location.origin)).toString()
+              response = await fetch(nextUrl, init)
+            }
+          }
+          return response
+        } catch (err) {
+          if (err && typeof err === 'object' && err.name === 'AbortError') {
+            throw new Error('AI响应超时（10秒）\n请重试或切换模型')
+          }
+          throw err
+        } finally {
+          clearTimeout(t)
+        }
+      }
+
+      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : 10000
+      let response = await doPost('/api/ai', timeoutMs)
+      if (response.status === 405) {
+        response = await doPost('/api/ai/', timeoutMs)
+      }
+
+      const text = await response.text()
+      const data = safeJsonParse(text, null)
+      if (!response.ok) {
+        if (response.status === 405) {
+          throw new Error('[ENV_UNAVAILABLE] 当前不在 Cloudflare Pages 环境，Workers AI 不可用。如在本地开发，请切换为离线模式或配置在线直连。')
+        }
+        const msg =
+          data?.error ||
+          data?.message ||
+          text ||
+          `请求失败（HTTP ${response.status}）`
+        throw new Error(String(msg))
+      }
+      const content = data?.content
+      if (!content) throw new Error('AI返回为空或格式不正确')
+      return String(content).trim()
+    }
+
+    async function callOpenAICompatDirect(messages, cfg) {
+      if (!cfg.apiKey) throw new Error('在线直连需要 API Key，请先在“AI配置”中填写并保存')
+      const baseUrl = normalizeBaseUrl(cfg.baseUrl)
+      if (!baseUrl) throw new Error('请先在“AI配置”中填写 Base URL 并保存')
+      if (!cfg.model) throw new Error('请先在“AI配置”中填写模型并保存')
+
+      const timeoutMs = 60000
+      const controller = new AbortController()
+      const t = setTimeout(() => controller.abort(), timeoutMs)
+      const url = `${baseUrl}/chat/completions`
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cfg.apiKey}`
+          },
+          body: JSON.stringify({
+            model: cfg.model,
+            messages,
+            temperature: cfg.temperature,
+            max_tokens: cfg.maxTokens
+          }),
+          signal: controller.signal
+        })
+
+        const text = await response.text()
+        const data = safeJsonParse(text, null)
+        if (!response.ok) {
+          const msg =
+            data?.error?.message ||
+            data?.message ||
+            text ||
+            `请求失败（HTTP ${response.status}）`
+          throw new Error(String(msg))
+        }
+        const content = data?.choices?.[0]?.message?.content
+        if (!content) throw new Error('AI返回为空或格式不正确')
+        return String(content).trim()
+      } catch (err) {
+        if (err && typeof err === 'object' && err.name === 'AbortError') {
+          throw new Error('请求超时，请稍后重试或降低输出长度')
+        }
+        const msg = String(err?.message || err || 'AI调用失败')
+        if (/failed to fetch/i.test(msg)) {
+          throw new Error('请求失败（可能是网络或CORS跨域限制）。请确认服务支持浏览器直连，或更换提供商/网关。')
+        }
+        throw new Error(msg)
+      } finally {
+        clearTimeout(t)
+      }
+    }
+
+    async function callOffline(messages, cfg) {
+      const engine = await loadOfflineEngine(cfg.offlineModel || DEFAULT_OFFLINE_MODEL)
+      const response = await engine.chat.completions.create({
+        messages,
+        temperature: cfg.temperature,
+        max_tokens: cfg.maxTokens
+      })
+      const content = response?.choices?.[0]?.message?.content
+      if (!content) throw new Error('离线模型返回为空或格式不正确')
+      return String(content).trim()
+    }
+
+    async function callAI(userPrompt, options) {
+      const cfg = getAiConfig()
+      const messages = buildMessages(cfg.systemPrompt, options?.toneReference || '', userPrompt)
+      const timeoutMs = options?.timeoutMs || undefined
+
+      if (cfg.mode === 'offline') {
+        return await callOffline(messages, cfg)
+      }
+
+      if (cfg.mode === 'online') {
+        if (cfg.onlineProvider === 'cloudflare_workers_ai') {
+          return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+        }
+        return await callOpenAICompatDirect(messages, cfg)
+      }
+
+      // auto 模式：依次尝试，环境不可用时快速跳过
+      const errors = []
+      if (cfg.onlineProvider === 'cloudflare_workers_ai') {
+        try {
+          return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+        } catch (err) {
+          const msg = String(err?.message || err)
+          // 环境不可用（405等），不作为致命错误，静默跳过
+          if (!msg.includes('[ENV_UNAVAILABLE]')) {
+            errors.push(`Cloudflare Workers AI：${msg}`)
+          }
+        }
+      }
+
+      // 离线回退：仅使用已加载的引擎，不自动触发下载
+      if (offlineState.engine) {
+        try {
+          return await callOffline(messages, cfg)
+        } catch (err) {
+          errors.push(`离线模式：${String(err?.message || err)}`)
+        }
+      } else {
+        errors.push('离线模式：未加载（请在AI配置中先加载离线模型）')
+      }
+
+      if (cfg.baseUrl && cfg.model && cfg.apiKey) {
+        try {
+          return await callOpenAICompatDirect(messages, cfg)
+        } catch (err) {
+          errors.push(`在线直连：${String(err?.message || err)}`)
+        }
+      }
+
+      throw new Error(errors.join('\n') || 'AI调用失败')
+    }
+
+    function loadTemplates() {
+      const raw = safeJsonParse(localStorage.getItem(STORAGE_KEYS.templates), null)
+      const legacy = safeJsonParse(localStorage.getItem('templates'), [])
+      const arr = Array.isArray(raw) ? raw : (Array.isArray(legacy) ? legacy : [])
+      return arr.map(t => ({
+        id: t?.id || String(Math.random()).slice(2) + String(Date.now()),
+        name: String(t?.name || '').trim(),
+        content: String(t?.content || '').trim(),
+        useForTone: typeof t?.useForTone === 'boolean' ? t.useForTone : true,
+        createdAt: t?.createdAt || nowIso(),
+        updatedAt: t?.updatedAt || nowIso()
+      })).filter(t => t.name && t.content)
+    }
+
+    function saveTemplates(nextTemplates) {
+      localStorage.setItem(STORAGE_KEYS.templates, JSON.stringify(nextTemplates))
+      localStorage.setItem('templates', JSON.stringify(nextTemplates))
+    }
+
+    function loadCases() {
+      const raw = safeJsonParse(localStorage.getItem(STORAGE_KEYS.cases), null)
+      const legacy = safeJsonParse(localStorage.getItem('cases'), [])
+      const arr = Array.isArray(raw) ? raw : (Array.isArray(legacy) ? legacy : [])
+      return arr.map(c => {
+        const createdAt = c?.createdAt || c?.time || nowIso()
+        const ms = Date.parse(createdAt)
+        return {
+          id: c?.id || Date.now() + Math.floor(Math.random() * 1000),
+          createdAt: Number.isFinite(ms) ? new Date(ms).toISOString() : nowIso(),
+          archivedAt: c?.archivedAt || null,
+          title: String(c?.title || '').trim(),
+          description: String(c?.description || '').trim(),
+          solution: String(c?.solution || '').trim(),
+          remark: String(c?.remark || '').trim(),
+          rootCause: String(c?.rootCause || '').trim(),
+          category: String(c?.category || '').trim(),
+          priority: String(c?.priority || '').trim(),
+          customerRequest: String(c?.customerRequest || '').trim(),
+          status: String(c?.status || 'closed').trim(),
+          process: c?.process || null
+        }
+      }).filter(c => c.description)
+    }
+
+    function saveCases(nextCases) {
+      localStorage.setItem(STORAGE_KEYS.cases, JSON.stringify(nextCases))
+      localStorage.setItem('cases', JSON.stringify(nextCases))
+    }
+
+    let templates = loadTemplates()
+    let cases = loadCases()
+    function newId() {
+      return String(Date.now()) + '_' + String(Math.random()).slice(2)
+    }
+
+    function normalizeDraft(d) {
+      const id = String(d?.id || newId())
+      const createdAt = d?.createdAt || nowIso()
+      const ms = Date.parse(createdAt)
+      const createdAtIso = Number.isFinite(ms) ? new Date(ms).toISOString() : nowIso()
+      const updatedAt = d?.updatedAt || createdAtIso
+      const updatedMs = Date.parse(updatedAt)
+      const updatedAtIso = Number.isFinite(updatedMs) ? new Date(updatedMs).toISOString() : createdAtIso
+
+      const checklist = Array.isArray(d?.checklist) ? d.checklist.map(x => String(x || '').trim()).filter(Boolean) : []
+      const timeline = Array.isArray(d?.timeline) ? d.timeline : (Array.isArray(d?.aiLogs) ? d.aiLogs.slice(0, 200) : [])
+
+      const ai = d?.ai || {}
+      const edited = d?.edited || {}
+      return {
+        id,
+        title: String(d?.title || '').trim() || '未命名案件',
+        status: d?.status || 'processing',
+        createdAt: createdAtIso,
+        updatedAt: updatedAtIso,
+        originalEmail: String(d?.originalEmail || '').trim(),
+        checklist,
+        followupCustomer: String(d?.followupCustomer || '').trim(),
+        ai: {
+          devMsgZh: String(ai?.devMsgZh || '').trim(),
+          clientMsgEn: String(ai?.clientMsgEn || '').trim(),
+          clientMsgZh: String(ai?.clientMsgZh || '').trim(),
+          followupClientEn: String(ai?.followupClientEn || '').trim(),
+          followupClientZh: String(ai?.followupClientZh || '').trim(),
+          followupDevZh: String(ai?.followupDevZh || '').trim(),
+          followupNextAction: String(ai?.followupNextAction || '').trim(),
+          summarySolution: String(ai?.summarySolution || '').trim(),
+          summaryRemark: String(ai?.summaryRemark || '').trim(),
+          summaryRootCause: String(ai?.summaryRootCause || '').trim(),
+          summaryCategory: String(ai?.summaryCategory || '').trim(),
+          summaryPriority: String(ai?.summaryPriority || '').trim(),
+          summaryCustomerRequest: String(ai?.summaryCustomerRequest || '').trim()
+        },
+        edited: {
+          devMsgZh: String(edited?.devMsgZh || '').trim(),
+          clientMsgEn: String(edited?.clientMsgEn || '').trim(),
+          clientMsgZh: String(edited?.clientMsgZh || '').trim(),
+          followupClientEn: String(edited?.followupClientEn || '').trim(),
+          followupClientZh: String(edited?.followupClientZh || '').trim(),
+          followupDevZh: String(edited?.followupDevZh || '').trim(),
+          solution: String(edited?.solution || '').trim(),
+          remark: String(edited?.remark || '').trim(),
+          rootCause: String(edited?.rootCause || '').trim()
+        },
+        timeline
+      }
+    }
+
+    function loadDrafts() {
+      const raw = safeJsonParse(localStorage.getItem(STORAGE_KEYS.caseDrafts), null)
+      const arr = Array.isArray(raw) ? raw : []
+      return arr.map(normalizeDraft)
+    }
+
+    function saveDrafts(nextDrafts) {
+      localStorage.setItem(STORAGE_KEYS.caseDrafts, JSON.stringify(nextDrafts))
+    }
+
+    function loadActiveDraftId() {
+      return String(localStorage.getItem(STORAGE_KEYS.activeDraftId) || '').trim()
+    }
+
+    function saveActiveDraftId(id) {
+      localStorage.setItem(STORAGE_KEYS.activeDraftId, String(id || ''))
+    }
+
+    function createDraft() {
+      const draft = normalizeDraft({ id: newId(), title: `案件 ${new Date().toLocaleString()}`, createdAt: nowIso(), updatedAt: nowIso() })
+      drafts.unshift(draft)
+      saveDrafts(drafts)
+      setActiveDraft(draft.id)
+      return draft
+    }
+
+    function getActiveDraft() {
+      return drafts.find(d => d.id === activeDraftId) || null
+    }
+
+    function setActiveDraft(id) {
+      if (id === activeDraftId) return
+      const found = drafts.find(d => d.id === id)
+      if (!found) return
+      // 先保存当前draft
+      const current = getActiveDraft()
+      if (current) {
+        readUIIntoDraft(current)
+        saveDrafts(drafts)
+      }
+      activeDraftId = id
+      saveActiveDraftId(id)
+      renderDraftTabs()
+      applyDraftToUI(found)
+    }
+
+    function renderDraftTabs() {
+      const el = document.getElementById('draft-tabs')
+      if (!el) return
+      el.textContent = ''
+      drafts.slice(0, 20).forEach(d => {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'draft-tab' + (d.id === activeDraftId ? ' active' : '')
+        const label = d.title || '未命名案件'
+        const statusIcon = CASE_STATUS[d.status] ? CASE_STATUS[d.status].charAt(0) : ''
+        btn.textContent = (statusIcon ? statusIcon + ' ' : '') + (label.length > 22 ? label.slice(0, 22) + '…' : label)
+        btn.addEventListener('click', () => setActiveDraft(d.id))
+        el.appendChild(btn)
+      })
+      if (!drafts.length) {
+        const span = document.createElement('span')
+        span.className = 'muted'
+        span.textContent = '暂无进行中案件'
+        el.appendChild(span)
+      }
+    }
+
+    function renderChecklist(list) {
+      const ul = document.getElementById('checklist')
+      if (!ul) return
+      while (ul.firstChild) ul.removeChild(ul.firstChild)
+      ;(Array.isArray(list) ? list : []).forEach(item => {
+        const li = document.createElement('li')
+        li.textContent = String(item || '')
+        ul.appendChild(li)
+      })
+    }
+
+    function applyDraftToUI(draft) {
+      document.getElementById('case-status').value = draft.status || 'processing'
+      document.getElementById('case-category').value = draft.ai.summaryCategory || ''
+      document.getElementById('case-priority').value = draft.ai.summaryPriority || ''
+      document.getElementById('case-request').value = draft.ai.summaryCustomerRequest || ''
+      document.getElementById('case-input').value = draft.originalEmail || ''
+      renderChecklist(draft.checklist || [])
+
+      document.getElementById('dev-msg').value = draft.edited.devMsgZh || draft.ai.devMsgZh || ''
+      document.getElementById('client-msg-en').value = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+      document.getElementById('client-msg-zh').value = draft.edited.clientMsgZh || draft.ai.clientMsgZh || ''
+
+      document.getElementById('customer-followup').value = draft.followupCustomer || ''
+      document.getElementById('followup-client-en').value = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
+      document.getElementById('followup-client-zh').value = draft.edited.followupClientZh || draft.ai.followupClientZh || ''
+      document.getElementById('followup-dev-zh').value = draft.edited.followupDevZh || draft.ai.followupDevZh || ''
+
+      const nextActionEl = document.getElementById('next-action')
+      if (nextActionEl) nextActionEl.value = draft.ai.followupNextAction || ''
+
+      const hasFollowup = !!(draft.edited.followupClientEn || draft.ai.followupClientEn || draft.followupCustomer)
+      document.getElementById('followup-output').style.display = hasFollowup ? 'block' : 'none'
+
+      document.getElementById('solution-input').value = draft.edited.solution || draft.ai.summarySolution || ''
+      document.getElementById('remark-input').value = draft.edited.remark || draft.ai.summaryRemark || ''
+      document.getElementById('root-cause-input').value = draft.edited.rootCause || draft.ai.summaryRootCause || ''
+
+      const hasAnyResult =
+        (draft.checklist && draft.checklist.length) ||
+        draft.ai.devMsgZh ||
+        draft.ai.clientMsgEn ||
+        draft.ai.clientMsgZh
+      document.getElementById('case-result').style.display = hasAnyResult ? 'block' : 'none'
+    }
+
+    function readUIIntoDraft(draft) {
+      draft.status = document.getElementById('case-status').value || 'processing'
+      draft.originalEmail = String(document.getElementById('case-input').value || '').trim()
+      draft.edited.devMsgZh = String(document.getElementById('dev-msg').value || '').trim()
+      draft.edited.clientMsgEn = String(document.getElementById('client-msg-en').value || '').trim()
+      draft.edited.clientMsgZh = String(document.getElementById('client-msg-zh').value || '').trim()
+      draft.followupCustomer = String(document.getElementById('customer-followup').value || '').trim()
+      draft.edited.followupClientEn = String(document.getElementById('followup-client-en').value || '').trim()
+      draft.edited.followupClientZh = String(document.getElementById('followup-client-zh').value || '').trim()
+      draft.edited.followupDevZh = String(document.getElementById('followup-dev-zh').value || '').trim()
+      draft.edited.solution = String(document.getElementById('solution-input').value || '').trim()
+      draft.edited.remark = String(document.getElementById('remark-input').value || '').trim()
+      draft.edited.rootCause = String(document.getElementById('root-cause-input').value || '').trim()
+      draft.updatedAt = nowIso()
+    }
+
+    let drafts = loadDrafts()
+    let activeDraftId = loadActiveDraftId()
+    if (!drafts.length) {
+      const d = normalizeDraft({ id: newId(), title: `案件 ${new Date().toLocaleString()}`, createdAt: nowIso(), updatedAt: nowIso() })
+      drafts = [d]
+      saveDrafts(drafts)
+      activeDraftId = d.id
+      saveActiveDraftId(d.id)
+    } else if (!drafts.find(d => d.id === activeDraftId)) {
+      activeDraftId = drafts[0].id
+      saveActiveDraftId(activeDraftId)
+    }
+
+    let draftSaveTimer = null
+    function scheduleSaveActiveDraft() {
+      clearTimeout(draftSaveTimer)
+      draftSaveTimer = setTimeout(() => {
+        const draft = getActiveDraft()
+        if (!draft) return
+        readUIIntoDraft(draft)
+        saveDrafts(drafts)
+        renderDraftTabs()
+      }, 250)
+    }
+
+    function formatTime(iso) {
+      const ms = Date.parse(iso)
+      if (!Number.isFinite(ms)) return String(iso || '')
+      return new Date(ms).toLocaleString()
+    }
+
+    // Tab切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(tab.dataset.tab).classList.add('active')
+      })
+    })
+
+    function renderToneTemplateSelect() {
+      const select = document.getElementById('tone-template-select')
+      while (select.firstChild) select.removeChild(select.firstChild)
+      templates.forEach(t => {
+        const opt = document.createElement('option')
+        opt.value = t.id
+        opt.textContent = `${t.useForTone ? '✓ ' : ''}${t.name}`
+        select.appendChild(opt)
+      })
+    }
+
+    function getSelectedToneTemplateIds() {
+      const select = document.getElementById('tone-template-select')
+      const ids = []
+      Array.from(select.selectedOptions).forEach(o => ids.push(o.value))
+      return ids
+    }
+
+    function buildToneOptionsForGeneration() {
+      const useTone = document.getElementById('use-tone').checked
+      if (!useTone) return { toneReference: '' }
+      const picked = pickToneTemplates(templates, getSelectedToneTemplateIds())
+      return { toneReference: buildToneReference(picked) }
+    }
+
+    function setBusy(buttonEl, busyText, isBusy) {
+      if (!buttonEl) return
+      if (isBusy) {
+        buttonEl.disabled = true
+        buttonEl.dataset.prevText = buttonEl.textContent
+        buttonEl.textContent = busyText
+      } else {
+        buttonEl.disabled = false
+        buttonEl.textContent = buttonEl.dataset.prevText || buttonEl.textContent
+        delete buttonEl.dataset.prevText
+      }
+    }
+
+    async function generateBilingualEmail(requirement) {
+      const prompt = [
+        '请根据用户需求生成两封邮件：中文邮件 + 英文邮件。',
+        '两封邮件内容一致但符合各自语言习惯；语气礼貌专业；可以直接复制发送。',
+        '输出严格使用 JSON：',
+        '{ "zh": "...", "en": "..." }',
+        `用户需求：${requirement}`
+      ].join('\n')
+      const raw = await callAI(prompt, buildToneOptionsForGeneration())
+      const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+      const zh = String(parsed?.zh || '').trim()
+      const en = String(parsed?.en || '').trim()
+      if (!zh || !en) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+      return { zh, en }
+    }
+
+    document.getElementById('generate-reply').addEventListener('click', async () => {
+      setGlobalError('')
+      const input = document.getElementById('reply-input').value.trim()
+      if (!input) {
+        toast('请输入你的需求')
+        return
+      }
+      const btn = document.getElementById('generate-reply')
+      setBusy(btn, '正在生成...', true)
+      try {
+        const out = await generateBilingualEmail(input)
+        document.getElementById('reply-zh').value = out.zh
+        document.getElementById('reply-en').value = out.en
+        document.getElementById('reply-output').style.display = 'block'
+        toast('已生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '正在生成...', false)
+      }
+    })
+
+    // 案件处理
+    document.getElementById('process-case').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      // 先保存当前UI到draft
+      readUIIntoDraft(draft)
+      const caseContent = draft.originalEmail
+      if (!caseContent) { toast('请粘贴客户的案件内容'); return }
+
+      const btn = document.getElementById('process-case')
+      setBusy(btn, 'AI正在处理...', true)
+
+      try {
+        const prompt = [
+          '你将收到一段客户英文案件内容。',
+          '请输出严格 JSON，结构如下：',
+          '{',
+          '  "summary": { "category": "", "priority": "", "customerRequest": "" },',
+          '  "checklist": ["...","..."],',
+          '  "devMsgZh": "...",',
+          '  "clientMsgEn": "...",',
+          '  "clientMsgZh": "..."',
+          '}',
+          '要求：',
+          '- summary.category 从以下选择：支付问题/登录问题/数据问题/功能异常/其他',
+          '- summary.priority 从以下选择：高/中/低',
+          '- summary.customerRequest 一句话总结客户核心诉求',
+          '- checklist 是通俗自查步骤，不用专业术语；覆盖：问题点是否完整、附件、截止时间、是否需要开发、是否有遗漏需求。',
+          '- devMsgZh 是给开发的中文转发邮件/话术：说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
+          '- clientMsgEn 是给客户的英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
+          '- clientMsgZh 是 clientMsgEn 的中文翻译。',
+          `客户案件内容：${caseContent}`
+        ].join('\n')
+
+        const raw = await callAI(prompt, buildToneOptionsForGeneration())
+        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+        const checklist = Array.isArray(parsed?.checklist) ? parsed.checklist : []
+        const devMsgZh = String(parsed?.devMsgZh || '').trim()
+        const clientMsgEn = String(parsed?.clientMsgEn || '').trim()
+        const clientMsgZh = String(parsed?.clientMsgZh || '').trim()
+        if (!checklist.length || !devMsgZh || !clientMsgEn || !clientMsgZh) {
+          throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+        }
+
+        const summary = parsed?.summary || {}
+        draft.ai.summaryCategory = String(summary.category || '').trim()
+        draft.ai.summaryPriority = String(summary.priority || '').trim()
+        draft.ai.summaryCustomerRequest = String(summary.customerRequest || '').trim()
+
+        draft.checklist = checklist.map(x => String(x || '').trim()).filter(Boolean).slice(0, 20)
+        draft.ai.devMsgZh = devMsgZh
+        draft.ai.clientMsgEn = clientMsgEn
+        draft.ai.clientMsgZh = clientMsgZh
+        draft.timeline.push({ type: 'customer_email', content: caseContent, time: nowIso() })
+        draft.timeline.push({ type: 'first_analysis', result: parsed, time: nowIso() })
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+        applyDraftToUI(draft)
+        toast('已生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, 'AI正在处理...', false)
+      }
+    })
+
+    document.getElementById('generate-followup').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      const followup = draft.followupCustomer
+      if (!followup) { toast('请粘贴客户后续回复'); return }
+      if (!draft.ai.clientMsgEn) { toast('请先处理一次案件'); return }
+
+      const btn = document.getElementById('generate-followup')
+      setBusy(btn, '正在生成...', true)
+      try {
+        const prompt = [
+          '你将收到：初始案件内容 + 客户后续回复。',
+          '请基于上下文生成对应的：给客户英文回复（含中文翻译）以及给开发的中文沟通话术。',
+          '输出严格 JSON：',
+          '{ "clientMsgEn": "...", "clientMsgZh": "...", "devMsgZh": "...", "nextAction": "..." }',
+          '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；语气礼貌专业。',
+          '- nextAction 说明下一步行动，如：等待客户提供截图、等待开发确认日志、可直接关闭等。',
+          `初始案件内容：${draft.originalEmail}`,
+          `客户后续回复：${followup}`
+        ].join('\n')
+
+        const raw = await callAI(prompt, buildToneOptionsForGeneration())
+        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+        const clientMsgEn = String(parsed?.clientMsgEn || '').trim()
+        const clientMsgZh = String(parsed?.clientMsgZh || '').trim()
+        const devMsgZh = String(parsed?.devMsgZh || '').trim()
+        if (!clientMsgEn || !clientMsgZh || !devMsgZh) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+
+        const nextAction = String(parsed?.nextAction || '').trim()
+        draft.ai.followupNextAction = nextAction
+
+        draft.ai.followupClientEn = clientMsgEn
+        draft.ai.followupClientZh = clientMsgZh
+        draft.ai.followupDevZh = devMsgZh
+        draft.timeline.push({ type: 'customer_followup', content: followup, time: nowIso() })
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+        applyDraftToUI(draft)
+        toast('已生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '正在生成...', false)
+      }
+    })
+
+    document.getElementById('ai-summarize-case').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      if (!draft.ai.clientMsgEn) { toast('请先处理一次案件'); return }
+      const btn = document.getElementById('ai-summarize-case')
+      setBusy(btn, '正在生成...', true)
+      try {
+        const prompt = [
+          '请根据以下案件完整处理过程，自动生成结案总结。',
+          '输出严格 JSON：',
+          '{ "description": "...", "solution": "...", "rootCause": "...", "remark": "..." }',
+          '要求：',
+          '- description 简要描述案件问题',
+          '- solution 说明最终怎么解决',
+          '- rootCause 给出根因（如不确定写"待确认"）',
+          '- remark 写补充信息/影响范围/后续行动',
+          `案件原始邮件：${draft.originalEmail}`,
+          `自查步骤：${(draft.checklist || []).join('；')}`,
+          `给开发话术：${draft.edited.devMsgZh || draft.ai.devMsgZh}`,
+          `给客户回复（英文）：${draft.edited.clientMsgEn || draft.ai.clientMsgEn}`,
+          `客户后续：${draft.followupCustomer || ''}`,
+          `后续给客户回复：${draft.edited.followupClientEn || draft.ai.followupClientEn || ''}`,
+          `后续给开发话术：${draft.edited.followupDevZh || draft.ai.followupDevZh || ''}`
+        ].join('\n')
+        const raw = await callAI(prompt, buildToneOptionsForGeneration())
+        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+        const description = String(parsed?.description || '').trim()
+        const solution = String(parsed?.solution || '').trim()
+        const rootCause = String(parsed?.rootCause || '').trim()
+        const remark = String(parsed?.remark || '').trim()
+        if (!solution) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+        if (description && !draft.ai.summaryCustomerRequest) {
+          draft.ai.summaryCustomerRequest = description
+        }
+        draft.ai.summarySolution = solution
+        draft.ai.summaryRootCause = rootCause
+        draft.ai.summaryRemark = remark
+        draft.timeline.push({ type: 'ai_summarize', result: { solution, rootCause, remark }, time: nowIso() })
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+        applyDraftToUI(draft)
+        toast('已生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '正在生成...', false)
+      }
+    })
+
+    // 完成案件（一键归档：自动 AI 生成结案总结 + 带入归档内容 + 保存）
+    document.getElementById('finish-case').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+
+      if (!draft.originalEmail) { toast('请先处理案件'); return }
+
+      const btn = document.getElementById('finish-case')
+      setBusy(btn, '归档中...', true)
+      try {
+        // 如果解决方案为空，自动 AI 生成结案总结 + 带入归档内容
+        if (!draft.edited.solution) {
+          // 先 AI 生成结案总结
+          if (draft.ai.clientMsgEn && !draft.ai.summarySolution) {
+            try {
+              const prompt = [
+                '请根据以下案件信息生成结构化结案总结。',
+                '输出严格 JSON：',
+                '{ "solution": "...", "rootCause": "...", "remark": "..." }',
+                '要求：solution 说明最终怎么解决；rootCause 给出根因；remark 写补充信息。',
+                `案件描述：${draft.originalEmail}`,
+                `自查步骤：${(draft.checklist || []).join('；')}`,
+                `给开发话术：${draft.edited.devMsgZh || draft.ai.devMsgZh}`,
+                `给客户回复（英文）：${draft.edited.clientMsgEn || draft.ai.clientMsgEn}`,
+                `客户后续：${draft.followupCustomer || ''}`
+              ].join('\n')
+              const raw = await callAI(prompt, buildToneOptionsForGeneration())
+              const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+              draft.ai.summarySolution = String(parsed?.solution || '').trim()
+              draft.ai.summaryRootCause = String(parsed?.rootCause || '').trim()
+              draft.ai.summaryRemark = String(parsed?.remark || '').trim()
+              draft.timeline.push({ type: 'ai_summarize', result: { solution: draft.ai.summarySolution, rootCause: draft.ai.summaryRootCause, remark: draft.ai.summaryRemark }, time: nowIso() })
+            } catch (err) {
+              // AI 生成失败不阻断归档
+            }
+          }
+
+          // 自动带入归档内容
+          const parts = []
+          const clientReply = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+          const devMsg = draft.edited.devMsgZh || draft.ai.devMsgZh || ''
+          const followupReply = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
+          const followupDev = draft.edited.followupDevZh || draft.ai.followupDevZh || ''
+          if (clientReply) parts.push('【给客户英文回复】\n' + clientReply)
+          if (followupReply) parts.push('【后续给客户英文回复】\n' + followupReply)
+          if (devMsg) parts.push('【给开发沟通话术】\n' + devMsg)
+          if (followupDev) parts.push('【后续给开发话术】\n' + followupDev)
+          if (draft.ai.summarySolution) parts.unshift('【AI结案总结】\n' + draft.ai.summarySolution)
+          draft.edited.solution = parts.join('\n\n') || '（未填写）'
+          if (!draft.edited.remark && draft.ai.summaryRemark) draft.edited.remark = draft.ai.summaryRemark
+          if (!draft.edited.rootCause && draft.ai.summaryRootCause) draft.edited.rootCause = draft.ai.summaryRootCause
+          // 更新UI
+          document.getElementById('solution-input').value = draft.edited.solution
+          document.getElementById('remark-input').value = draft.edited.remark
+          document.getElementById('root-cause-input').value = draft.edited.rootCause
+        }
+
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+
+        const description = draft.originalEmail || ''
+        const title = description.length > 200 ? description.slice(0, 200) + '...' : description
+
+        draft.timeline.push({ type: 'case_closed', result: { solution: draft.edited.solution, remark: draft.edited.remark, rootCause: draft.edited.rootCause }, time: nowIso() })
+
+        const saved = {
+          id: draft.id,
+          createdAt: draft.createdAt,
+          archivedAt: nowIso(),
+          status: 'closed',
+          category: draft.ai.summaryCategory || '',
+          priority: draft.ai.summaryPriority || '',
+          customerRequest: draft.ai.summaryCustomerRequest || '',
+          title: title,
+          description: description,
+          solution: draft.edited.solution,
+          remark: draft.edited.remark || '',
+          rootCause: draft.edited.rootCause || '',
+          timeline: draft.timeline,
+          process: {
+            originalEmail: draft.originalEmail,
+            checklist: draft.checklist,
+            ai: { ...draft.ai },
+            edited: { ...draft.edited },
+            followupCustomer: draft.followupCustomer,
+            timeline: draft.timeline
+          }
+        }
+        cases.unshift(saved)
+        saveCases(cases)
+
+        // 从drafts中移除
+        drafts = drafts.filter(d => d.id !== draft.id)
+        if (!drafts.length) {
+          const newDraft = normalizeDraft({ id: newId(), title: `案件 ${new Date().toLocaleString()}`, createdAt: nowIso(), updatedAt: nowIso() })
+          drafts = [newDraft]
+        }
+        saveDrafts(drafts)
+        activeDraftId = drafts[0].id
+        saveActiveDraftId(activeDraftId)
+        renderDraftTabs()
+        applyDraftToUI(drafts[0])
+
+        toast('案件已归档')
+        renderHistory()
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '归档中...', false)
+      }
+    })
+
+    // 一键带入归档内容
+    document.getElementById('auto-fill-archive').addEventListener('click', () => {
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      // 综合所有最终回复带入解决方案
+      const parts = []
+      const clientReply = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+      const devMsg = draft.edited.devMsgZh || draft.ai.devMsgZh || ''
+      const followupReply = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
+      const followupDev = draft.edited.followupDevZh || draft.ai.followupDevZh || ''
+      if (clientReply) parts.push('【给客户英文回复】\n' + clientReply)
+      if (followupReply) parts.push('【后续给客户英文回复】\n' + followupReply)
+      if (devMsg) parts.push('【给开发沟通话术】\n' + devMsg)
+      if (followupDev) parts.push('【后续给开发话术】\n' + followupDev)
+      if (!parts.length) {
+        toast('暂无可带入的内容，请先处理案件')
+        return
+      }
+      document.getElementById('solution-input').value = parts.join('\n\n')
+      // 带入AI生成的备注和根因
+      if (draft.ai.summaryRemark && !draft.edited.remark) {
+        document.getElementById('remark-input').value = draft.ai.summaryRemark
+      }
+      if (draft.ai.summaryRootCause && !draft.edited.rootCause) {
+        document.getElementById('root-cause-input').value = draft.ai.summaryRootCause
+      }
+      scheduleSaveActiveDraft()
+      toast('已带入归档内容')
+    })
+
+    // 新建/关闭/重命名 draft 按钮
+    document.getElementById('new-draft').addEventListener('click', () => {
+      createDraft()
+      // 切换到案件处理tab
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+      const caseTab = document.querySelector('.tab[data-tab="case-handle"]')
+      if (caseTab) caseTab.classList.add('active')
+      const caseContent = document.getElementById('case-handle')
+      if (caseContent) caseContent.classList.add('active')
+      toast('已新建案件')
+    })
+
+    document.getElementById('close-draft').addEventListener('click', () => {
+      const draft = getActiveDraft()
+      if (!draft) return
+      if (!confirm('确定要关闭此案件吗？未归档的数据将丢失。')) return
+      drafts = drafts.filter(d => d.id !== draft.id)
+      if (!drafts.length) {
+        const newDraft = normalizeDraft({ id: newId(), title: `案件 ${new Date().toLocaleString()}`, createdAt: nowIso(), updatedAt: nowIso() })
+        drafts = [newDraft]
+      }
+      saveDrafts(drafts)
+      activeDraftId = drafts[0].id
+      saveActiveDraftId(activeDraftId)
+      renderDraftTabs()
+      applyDraftToUI(drafts[0])
+      toast('已关闭')
+    })
+
+    document.getElementById('rename-draft').addEventListener('click', () => {
+      const draft = getActiveDraft()
+      if (!draft) return
+      const name = prompt('请输入新的案件名称：', draft.title)
+      if (!name) return
+      draft.title = String(name).trim()
+      draft.updatedAt = nowIso()
+      saveDrafts(drafts)
+      renderDraftTabs()
+    })
+
+    // 模板管理
+    function renderTemplates() {
+      const list = document.getElementById('template-list')
+      if (templates.length === 0) {
+        list.textContent = ''
+        const p = document.createElement('p')
+        p.style.color = '#999'
+        p.textContent = '暂无模板'
+        list.appendChild(p)
+        renderToneTemplateSelect()
+        return
+      }
+
+      list.textContent = ''
+      templates.forEach((t) => {
+        const wrap = document.createElement('div')
+        wrap.style.padding = '12px'
+        wrap.style.border = '1px solid #eee'
+        wrap.style.borderRadius = '8px'
+        wrap.style.marginBottom = '12px'
+
+        const title = document.createElement('div')
+        title.style.fontWeight = 'bold'
+        title.style.marginBottom = '8px'
+        title.textContent = t.name
+        wrap.appendChild(title)
+
+        const flags = document.createElement('div')
+        flags.style.display = 'flex'
+        flags.style.gap = '10px'
+        flags.style.flexWrap = 'wrap'
+        flags.style.marginBottom = '8px'
+        const tonePill = document.createElement('label')
+        tonePill.className = 'pill'
+        const chk = document.createElement('input')
+        chk.type = 'checkbox'
+        chk.checked = !!t.useForTone
+        chk.addEventListener('change', () => {
+          t.useForTone = chk.checked
+          t.updatedAt = nowIso()
+          saveTemplates(templates)
+          renderToneTemplateSelect()
+        })
+        const chkText = document.createElement('span')
+        chkText.textContent = '用于语气学习'
+        tonePill.appendChild(chk)
+        tonePill.appendChild(chkText)
+        flags.appendChild(tonePill)
+        wrap.appendChild(flags)
+
+        const content = document.createElement('textarea')
+        content.style.height = '140px'
+        content.value = t.content
+        content.addEventListener('change', () => {
+          t.content = String(content.value || '').trim()
+          t.updatedAt = nowIso()
+          saveTemplates(templates)
+        })
+        wrap.appendChild(content)
+
+        const btnRow = document.createElement('div')
+        btnRow.style.display = 'flex'
+        btnRow.style.gap = '8px'
+        btnRow.style.flexWrap = 'wrap'
+
+        const copyBtn = document.createElement('button')
+        copyBtn.className = 'btn btn-secondary copy-btn'
+        copyBtn.textContent = '复制'
+        copyBtn.addEventListener('click', async () => {
+          const ok = await copyToClipboard(t.content)
+          toast(ok ? '已复制' : '复制失败')
+        })
+        btnRow.appendChild(copyBtn)
+
+        const renameBtn = document.createElement('button')
+        renameBtn.className = 'btn btn-secondary copy-btn'
+        renameBtn.textContent = '重命名'
+        renameBtn.addEventListener('click', () => {
+          const name = prompt('请输入新的模板名称：', t.name)
+          if (!name) return
+          t.name = String(name).trim()
+          t.updatedAt = nowIso()
+          saveTemplates(templates)
+          renderTemplates()
+        })
+        btnRow.appendChild(renameBtn)
+
+        const delBtn = document.createElement('button')
+        delBtn.className = 'btn btn-danger copy-btn'
+        delBtn.textContent = '删除'
+        delBtn.addEventListener('click', () => {
+          if (!confirm('确定要删除这个模板吗？')) return
+          templates = templates.filter(x => x.id !== t.id)
+          saveTemplates(templates)
+          renderTemplates()
+        })
+        btnRow.appendChild(delBtn)
+
+        wrap.appendChild(btnRow)
+        list.appendChild(wrap)
+      })
+      renderToneTemplateSelect()
+    }
+
+    document.getElementById('add-template').addEventListener('click', () => {
+      setGlobalError('')
+      const name = document.getElementById('template-name').value.trim()
+      const content = document.getElementById('template-content').value.trim()
+      const useForTone = document.getElementById('template-tone').checked
+
+      if (!name || !content) {
+        toast('请输入模板名称和内容')
+        return
+      }
+
+      templates.unshift({
+        id: String(Math.random()).slice(2) + String(Date.now()),
+        name,
+        content,
+        useForTone: !!useForTone,
+        createdAt: nowIso(),
+        updatedAt: nowIso()
+      })
+      saveTemplates(templates)
+      renderTemplates()
+      document.getElementById('template-name').value = ''
+      document.getElementById('template-content').value = ''
+      document.getElementById('template-tone').checked = true
+      toast('模板添加成功')
+    })
+
+    document.getElementById('export-templates').addEventListener('click', () => {
+      setGlobalError('')
+      const content = JSON.stringify(templates, null, 2)
+      downloadTextFile(`templates_${new Date().toISOString().slice(0, 10)}.json`, content, 'application/json;charset=utf-8')
+      toast('已导出')
+    })
+
+    document.getElementById('import-templates').addEventListener('change', async (e) => {
+      setGlobalError('')
+      const file = e.target.files && e.target.files[0]
+      if (!file) return
+      try {
+        const text = await file.text()
+        const imported = safeJsonParse(text, null)
+        if (!Array.isArray(imported)) throw new Error('文件格式不正确：需要数组 JSON')
+        const next = imported.map(t => ({
+          id: t?.id || String(Math.random()).slice(2) + String(Date.now()),
+          name: String(t?.name || '').trim(),
+          content: String(t?.content || '').trim(),
+          useForTone: typeof t?.useForTone === 'boolean' ? t.useForTone : true,
+          createdAt: t?.createdAt || nowIso(),
+          updatedAt: t?.updatedAt || nowIso()
+        })).filter(t => t.name && t.content)
+        if (!next.length) throw new Error('没有可导入的模板')
+        templates = next.concat(templates).slice(0, 200)
+        saveTemplates(templates)
+        renderTemplates()
+        toast('已导入')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        e.target.value = ''
+      }
+    })
+
+    // 历史记录
+    function getFilteredCases() {
+      const filter = document.getElementById('time-filter').value
+      const query = document.getElementById('search-filter').value.trim().toLowerCase()
+      let filtered = cases.slice()
+
+      if (filter !== 'all') {
+        const now = Date.now()
+        if (filter === 'custom') {
+          const from = document.getElementById('from-date').value
+          const to = document.getElementById('to-date').value
+          const fromMs = from ? Date.parse(from + 'T00:00:00') : NaN
+          const toMs = to ? Date.parse(to + 'T23:59:59') : NaN
+          filtered = filtered.filter(c => {
+            const ms = Date.parse(c.createdAt)
+            if (!Number.isFinite(ms)) return false
+            if (Number.isFinite(fromMs) && ms < fromMs) return false
+            if (Number.isFinite(toMs) && ms > toMs) return false
+            return true
+          })
+        } else {
+          const days = parseInt(filter)
+          filtered = filtered.filter(c => {
+            const ms = Date.parse(c.createdAt)
+            return Number.isFinite(ms) && (now - ms) < days * 24 * 60 * 60 * 1000
+          })
+        }
+      }
+
+      if (query) {
+        filtered = filtered.filter(c => {
+          const hay = [c.title, c.description, c.category, c.customerRequest, c.solution, c.remark, c.rootCause].join('\n').toLowerCase()
+          return hay.includes(query)
+        })
+      }
+
+      return filtered
+    }
+
+    function renderHistory() {
+      const filteredCases = getFilteredCases()
+
+      const list = document.getElementById('history-list')
+      if (filteredCases.length === 0) {
+        list.textContent = ''
+        const tr = document.createElement('tr')
+        const td = document.createElement('td')
+        td.colSpan = 8
+        td.style.textAlign = 'center'
+        td.style.color = '#999'
+        td.textContent = '暂无记录'
+        tr.appendChild(td)
+        list.appendChild(tr)
+        return
+      }
+
+      list.textContent = ''
+      filteredCases.forEach(c => {
+        const tr = document.createElement('tr')
+
+        const tdStatus = document.createElement('td')
+        tdStatus.textContent = CASE_STATUS[c.status] || CASE_STATUS.processing
+        tr.appendChild(tdStatus)
+
+        const tdCategory = document.createElement('td')
+        tdCategory.textContent = c.category || '-'
+        tr.appendChild(tdCategory)
+
+        const tdPriority = document.createElement('td')
+        tdPriority.textContent = c.priority || '-'
+        tr.appendChild(tdPriority)
+
+        const tdTime = document.createElement('td')
+        tdTime.textContent = formatTime(c.createdAt)
+        tr.appendChild(tdTime)
+
+        const tdDesc = document.createElement('td')
+        tdDesc.textContent = c.description
+        tdDesc.style.maxWidth = '520px'
+        tdDesc.style.whiteSpace = 'nowrap'
+        tdDesc.style.overflow = 'hidden'
+        tdDesc.style.textOverflow = 'ellipsis'
+        tr.appendChild(tdDesc)
+
+        const tdSol = document.createElement('td')
+        tdSol.textContent = c.solution
+        tdSol.style.maxWidth = '420px'
+        tdSol.style.whiteSpace = 'nowrap'
+        tdSol.style.overflow = 'hidden'
+        tdSol.style.textOverflow = 'ellipsis'
+        tr.appendChild(tdSol)
+
+        const tdRoot = document.createElement('td')
+        tdRoot.textContent = c.rootCause || '-'
+        tdRoot.style.maxWidth = '240px'
+        tdRoot.style.whiteSpace = 'nowrap'
+        tdRoot.style.overflow = 'hidden'
+        tdRoot.style.textOverflow = 'ellipsis'
+        tr.appendChild(tdRoot)
+
+        const tdActions = document.createElement('td')
+        const viewBtn = document.createElement('button')
+        viewBtn.className = 'btn btn-secondary copy-btn'
+        viewBtn.textContent = '查看'
+        viewBtn.addEventListener('click', () => openCaseDialog(c.id))
+        tdActions.appendChild(viewBtn)
+
+        const delBtn = document.createElement('button')
+        delBtn.className = 'btn btn-danger copy-btn'
+        delBtn.style.marginLeft = '8px'
+        delBtn.textContent = '删除'
+        delBtn.addEventListener('click', () => deleteCase(c.id))
+        tdActions.appendChild(delBtn)
+
+        tr.appendChild(tdActions)
+        list.appendChild(tr)
+      })
+    }
+
+    function deleteCase(id) {
+      setGlobalError('')
+      if (!confirm('确定要删除这个案件记录吗？')) return
+      cases = cases.filter(c => c.id !== id)
+      saveCases(cases)
+      renderHistory()
+      toast('已删除')
+    }
+
+    function openCaseDialog(id) {
+      const item = cases.find(c => c.id === id)
+      if (!item) return
+      document.getElementById('case-dialog-title').textContent = `案件详情（${formatTime(item.createdAt)}）`
+      document.getElementById('case-view-meta').textContent = item.archivedAt ? `归档时间：${formatTime(item.archivedAt)}` : ''
+      document.getElementById('case-view-description').value = item.description || ''
+      document.getElementById('case-view-solution').value = item.solution || ''
+      document.getElementById('case-view-rootcause').value = item.rootCause || ''
+      document.getElementById('case-view-remark').value = item.remark || ''
+
+      // 显示完整处理过程
+      const process = item.process
+      const processSection = document.getElementById('case-view-process-section')
+      if (process && (process.originalEmail || process.ai || process.checklist)) {
+        processSection.style.display = 'block'
+        document.getElementById('case-view-original').value = process.originalEmail || ''
+        document.getElementById('case-view-checklist').value = (process.checklist || []).join('\n')
+
+        // 兼容新旧结构：新版存 ai+edited，旧版存扁平字段
+        const ai = process.ai || {}
+        const edited = process.edited || {}
+        const devMsgFinal = edited.devMsgZh || ai.devMsgZh || process.devMsgZh || ''
+        const clientEnFinal = edited.clientMsgEn || ai.clientMsgEn || process.clientMsgEn || ''
+        const clientZhFinal = edited.clientMsgZh || ai.clientMsgZh || process.clientMsgZh || ''
+
+        document.getElementById('case-view-dev').value = devMsgFinal
+        document.getElementById('case-view-client-en').value = clientEnFinal
+        document.getElementById('case-view-client-zh').value = clientZhFinal
+
+        // 后续回复
+        const followupSection = document.getElementById('case-view-followup-section')
+        const followupCustomer = process.followupCustomer || ''
+        const fClientEn = edited.followupClientEn || ai.followupClientEn || process.followupClientEn || ''
+        const fClientZh = edited.followupClientZh || ai.followupClientZh || process.followupClientZh || ''
+        const fDevZh = edited.followupDevZh || ai.followupDevZh || process.followupDevZh || ''
+        if (followupCustomer || fClientEn) {
+          followupSection.style.display = 'block'
+          const parts = []
+          if (followupCustomer) parts.push('【客户后续回复】\n' + followupCustomer)
+          if (fClientEn) parts.push('【给客户英文回复】\n' + fClientEn)
+          if (fClientZh) parts.push('【中文翻译】\n' + fClientZh)
+          if (fDevZh) parts.push('【给开发话术】\n' + fDevZh)
+          document.getElementById('case-view-followup').value = parts.join('\n\n')
+        } else {
+          followupSection.style.display = 'none'
+        }
+
+        // AI中间结果：展示AI原始结果与用户修改版的对比
+        const aiLogParts = []
+        // AI原始结果
+        if (ai.devMsgZh && ai.devMsgZh !== devMsgFinal) {
+          aiLogParts.push('=== AI原始：给开发话术 ===\n' + ai.devMsgZh)
+        }
+        if (ai.clientMsgEn && ai.clientMsgEn !== clientEnFinal) {
+          aiLogParts.push('=== AI原始：给客户英文回复 ===\n' + ai.clientMsgEn)
+        }
+        if (ai.clientMsgZh && ai.clientMsgZh !== clientZhFinal) {
+          aiLogParts.push('=== AI原始：中文翻译 ===\n' + ai.clientMsgZh)
+        }
+        if (ai.summarySolution) {
+          aiLogParts.push('=== AI结案总结：解决方案 ===\n' + ai.summarySolution)
+        }
+        if (ai.summaryRootCause) {
+          aiLogParts.push('=== AI结案总结：根本原因 ===\n' + ai.summaryRootCause)
+        }
+        if (ai.summaryRemark) {
+          aiLogParts.push('=== AI结案总结：备注 ===\n' + ai.summaryRemark)
+        }
+        // AI调用日志
+        if (process.aiLogs && process.aiLogs.length) {
+          aiLogParts.push('=== AI调用日志 ===\n' + JSON.stringify(process.aiLogs, null, 2))
+        }
+        document.getElementById('case-view-ai-log').value = aiLogParts.join('\n\n') || '无记录'
+      } else {
+        processSection.style.display = 'none'
+      }
+
+      const timelineSection = document.getElementById('case-view-timeline-section')
+      const timeline = process?.timeline || item.timeline || []
+      if (timeline.length) {
+        timelineSection.style.display = 'block'
+        const lines = timeline.map(e => {
+          const t = e.time ? new Date(Date.parse(e.time)).toLocaleTimeString() : ''
+          const typeLabels = {
+            customer_email: '客户来信',
+            first_analysis: 'AI分析',
+            customer_followup: '客户补充',
+            ai_summarize: 'AI结案总结',
+            case_closed: '结案'
+          }
+          const label = typeLabels[e.type] || e.type || e.action || ''
+          let detail = ''
+          if (e.content) detail = e.content.slice(0, 100)
+          else if (e.result) detail = JSON.stringify(e.result).slice(0, 200)
+          else if (e.raw) detail = e.raw.slice(0, 100)
+          return `${t} ${label}${detail ? '\n  ' + detail : ''}`
+        })
+        document.getElementById('case-view-timeline').value = lines.join('\n')
+      } else {
+        timelineSection.style.display = 'none'
+      }
+
+      const dialog = document.getElementById('case-dialog')
+      if (typeof dialog.showModal === 'function') dialog.showModal()
+      else dialog.setAttribute('open', 'open')
+    }
+
+    document.getElementById('case-dialog-close').addEventListener('click', () => {
+      const dialog = document.getElementById('case-dialog')
+      if (typeof dialog.close === 'function') dialog.close()
+      else dialog.removeAttribute('open')
+    })
+
+    document.getElementById('time-filter').addEventListener('change', () => {
+      const val = document.getElementById('time-filter').value
+      document.getElementById('custom-range').style.display = val === 'custom' ? 'block' : 'none'
+      renderHistory()
+    })
+
+    let searchTimer = null
+    document.getElementById('search-filter').addEventListener('input', () => {
+      clearTimeout(searchTimer)
+      searchTimer = setTimeout(renderHistory, 180)
+    })
+    document.getElementById('from-date').addEventListener('change', renderHistory)
+    document.getElementById('to-date').addEventListener('change', renderHistory)
+
+    document.getElementById('export-csv').addEventListener('click', () => {
+      setGlobalError('')
+      const filtered = getFilteredCases()
+      const rows = [
+        ['时间', '状态', '分类', '优先级', '案件标题', '案件描述', '解决方案', '备注', '根本原因', '客户诉求']
+      ]
+      filtered.forEach(c => {
+        rows.push([formatTime(c.createdAt), c.status || '', c.category || '', c.priority || '', c.title || '', c.description, c.solution, c.remark || '', c.rootCause || '', c.customerRequest || ''])
+      })
+      const csv = '\ufeff' + rows.map(r => r.map(cell => {
+        const s = String(cell ?? '')
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"'
+        return s
+      }).join(',')).join('\n')
+      downloadTextFile(`cases_${new Date().toISOString().slice(0, 10)}.csv`, csv, 'text/csv;charset=utf-8')
+      toast('已导出')
+    })
+
+    document.body.addEventListener('click', async (e) => {
+      const btn = e.target && e.target.closest && e.target.closest('[data-copy-target]')
+      if (!btn) return
+      const id = btn.getAttribute('data-copy-target')
+      const el = document.getElementById(id)
+      if (!el) return
+      const text = 'value' in el ? el.value : el.textContent
+      const ok = await copyToClipboard(text)
+      toast(ok ? '已复制' : '复制失败')
+    })
+
+    function updateAiConfigVisibility() {
+      const mode = document.getElementById('ai-mode').value
+      const onlineProvider = document.getElementById('online-provider').value
+
+      const offlinePanel = document.getElementById('offline-panel')
+      const cloudflareOnline = document.getElementById('cloudflare-online')
+      const openaiOnline = document.getElementById('openai-online')
+
+      offlinePanel.style.display = mode === 'online' ? 'none' : 'block'
+
+      const showOnline = mode !== 'offline'
+      cloudflareOnline.style.display = showOnline && onlineProvider === 'cloudflare_workers_ai' ? 'block' : 'none'
+      openaiOnline.style.display = showOnline && onlineProvider === 'openai_compat_direct' ? 'block' : 'none'
+    }
+
+    function renderAiConfigForm() {
+      const cfg = getAiConfig()
+      document.getElementById('ai-mode').value = cfg.mode
+      document.getElementById('online-provider').value = cfg.onlineProvider
+      document.getElementById('cf-model').value = cfg.cfModel
+      document.getElementById('offline-model').value = cfg.offlineModel || DEFAULT_OFFLINE_MODEL
+      document.getElementById('hf-mirror').value = cfg.hfMirror || ''
+      document.getElementById('ai-base-url').value = cfg.baseUrl
+      document.getElementById('ai-model').value = cfg.model
+      document.getElementById('api-key').value = cfg.apiKey
+      document.getElementById('system-prompt').value = cfg.systemPrompt
+      document.getElementById('ai-temperature').value = String(cfg.temperature)
+      document.getElementById('ai-max-tokens').value = String(cfg.maxTokens)
+
+      if (offlineState.engine) setOfflineStatus('离线模型：已就绪')
+      else setOfflineStatus('离线模型：未加载')
+      updateAiConfigVisibility()
+    }
+
+    document.getElementById('ai-mode').addEventListener('change', updateAiConfigVisibility)
+    document.getElementById('online-provider').addEventListener('change', updateAiConfigVisibility)
+
+    document.getElementById('offline-load').addEventListener('click', async () => {
+      setGlobalError('')
+      const btn = document.getElementById('offline-load')
+      setBusy(btn, '加载中...', true)
+      try {
+        const modelId = document.getElementById('offline-model').value
+        await loadOfflineEngine(modelId)
+        toast('离线模型已就绪')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '加载中...', false)
+      }
+    })
+
+    document.getElementById('offline-unload').addEventListener('click', () => {
+      setGlobalError('')
+      unloadOfflineEngine()
+      toast('已卸载离线模型')
+    })
+
+    document.getElementById('save-config').addEventListener('click', () => {
+      setGlobalError('')
+      const mode = document.getElementById('ai-mode').value
+      const onlineProvider = document.getElementById('online-provider').value
+      const cfModel = String(document.getElementById('cf-model').value || '').trim()
+      const offlineModel = String(document.getElementById('offline-model').value || '').trim()
+      const hfMirror = String(document.getElementById('hf-mirror').value || '').trim()
+      const baseUrl = normalizeBaseUrl(document.getElementById('ai-base-url').value)
+      const model = String(document.getElementById('ai-model').value || '').trim()
+      const apiKey = String(document.getElementById('api-key').value || '').trim()
+      const systemPrompt = String(document.getElementById('system-prompt').value || '').trim()
+      const temperature = clampNumber(document.getElementById('ai-temperature').value, 0, 2, 0.7)
+      const maxTokens = clampNumber(document.getElementById('ai-max-tokens').value, 128, 8192, 2048)
+      setAiConfig({ mode, onlineProvider, cfModel, offlineModel, hfMirror, baseUrl, model, apiKey, systemPrompt, temperature, maxTokens })
+      toast('配置已保存')
+      updateAiConfigVisibility()
+    })
+
+    document.getElementById('test-ai').addEventListener('click', async () => {
+      setGlobalError('')
+      const btn = document.getElementById('test-ai')
+      setBusy(btn, '测试中...', true)
+      try {
+        // 走 callAI 的完整回退链，加 10 秒超时避免卡住
+        const res = await callAI('请只回复一个词：OK', { timeoutMs: 10000 })
+        toast(res.includes('OK') ? '测试成功' : '已返回结果')
+      } catch (err) {
+        const msg = String(err?.message || err)
+        let hint = msg
+        if (msg.includes('未加载') || msg.includes('离线模式')) {
+          hint = msg + '\n\n建议：1) 在 Cloudflare Pages 环境部署后访问；2) 先在AI配置中加载离线模型；3) 配置OpenAI兼容直连（需API Key）。'
+        }
+        setGlobalError('AI连接测试失败：' + hint)
+      } finally {
+        setBusy(btn, '测试中...', false)
+      }
+    })
+
+    // 初始化
+    try {
+      renderDraftTabs()
+      applyDraftToUI(getActiveDraft())
+      renderAiConfigForm()
+      renderToneTemplateSelect()
+      renderTemplates()
+      renderHistory()
+    } catch (err) {
+      setGlobalError(err.message || String(err))
+    }
+
+    // textarea 自动保存
+    const autoSaveIds = ['case-status', 'case-category', 'case-priority', 'case-request', 'case-input', 'dev-msg', 'client-msg-en', 'client-msg-zh', 'customer-followup', 'followup-client-en', 'followup-client-zh', 'followup-dev-zh', 'solution-input', 'remark-input', 'root-cause-input']
+    autoSaveIds.forEach(id => {
+      const el = document.getElementById(id)
+      if (el) {
+        el.addEventListener('input', scheduleSaveActiveDraft)
+        el.addEventListener('change', scheduleSaveActiveDraft)
+      }
+    })
+  </script>
+</body>
+</html>
