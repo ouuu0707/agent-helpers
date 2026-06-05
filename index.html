@@ -537,6 +537,17 @@
               <input type="text" id="search-filter" placeholder="按案件内容/解决方案/备注/根因搜索">
             </div>
             <div>
+              <label>状态</label>
+              <select id="status-filter">
+                <option value="all">全部状态</option>
+                <option value="processing">🟡处理中</option>
+                <option value="waiting_dev">🔵等待开发</option>
+                <option value="waiting_customer">🟣等待客户</option>
+                <option value="resolved">🟢已解决</option>
+                <option value="closed">⚫已结案</option>
+              </select>
+            </div>
+            <div>
               <label>时间范围</label>
               <select id="time-filter">
                 <option value="all">全部</option>
@@ -593,6 +604,7 @@
             <label>在线提供商</label>
             <select id="online-provider">
               <option value="cloudflare_workers_ai">Cloudflare Workers AI（推荐）</option>
+              <option value="openrouter">OpenRouter（多模型聚合）</option>
               <option value="openai_compat_direct">OpenAI兼容（浏览器直连）</option>
             </select>
           </div>
@@ -624,6 +636,21 @@
               <label>API Key</label>
               <input type="password" id="api-key" placeholder="输入你的API Key">
               <div class="help">纯前端直连会暴露 Key，请用权限受限/可随时撤销的 Key。</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="openrouter-online" style="display:none;">
+          <div class="row">
+            <div>
+              <label>OpenRouter API Key</label>
+              <input type="password" id="openrouter-key" placeholder="输入 OpenRouter API Key">
+              <div class="help">在 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 获取。</div>
+            </div>
+            <div>
+              <label>OpenRouter 模型</label>
+              <input type="text" id="openrouter-model" placeholder="比如：meta-llama/llama-3.1-8b-instruct:free">
+              <div class="help">支持免费和付费模型，详见 <a href="https://openrouter.ai/models" target="_blank" rel="noopener">模型列表</a>。</div>
             </div>
           </div>
         </div>
@@ -884,40 +911,81 @@
 
     function buildToneReference(templatesForTone) {
       if (!templatesForTone.length) return ''
-      const parts = templatesForTone.map(t => {
-        const name = String(t.name || '').slice(0, 80)
-        const content = String(t.content || '').trim().slice(0, 1200)
-        return `【${name}】\n${content}`
-      })
 
-      // 分析模板共同特点
-      const allContent = templatesForTone.map(t => t.content).join('\n')
-      const features = []
+      // AI风格画像：从模板中提取共同特征
+      const allContent = templatesForTone.map(t => String(t.content || '').trim()).filter(Boolean)
+      if (!allContent.length) return ''
+
+      // 提取风格画像
+      const profile = { greeting: '', closing: '', tone: '', length: '', commonExpressions: [] }
+
       // 开头习惯
-      const firstLines = templatesForTone.map(t => String(t.content || '').split('\n')[0]).filter(Boolean)
-      if (firstLines.length) features.push(`- 开头习惯：${firstLines.join(' / ')}`)
+      const greetings = allContent.map(c => c.split('\n')[0]).filter(Boolean)
+      const greetingCounts = {}
+      greetings.forEach(g => { const k = g.trim().toLowerCase().slice(0, 40); greetingCounts[k] = (greetingCounts[k] || 0) + 1 })
+      const topGreeting = Object.entries(greetingCounts).sort((a, b) => b[1] - a[1])[0]
+      if (topGreeting && topGreeting[1] >= 1) profile.greeting = greetings.find(g => g.trim().toLowerCase().slice(0, 40) === topGreeting[0])
+
       // 结尾习惯
-      const lastLines = templatesForTone.map(t => { const lines = String(t.content || '').split('\n'); return lines[lines.length - 1] }).filter(Boolean)
-      if (lastLines.length) features.push(`- 结尾习惯：${lastLines.join(' / ')}`)
-      // 句长
-      const avgLen = Math.round(allContent.length / templatesForTone.length)
-      features.push(`- 平均模板长度：${avgLen}字符`)
+      const closings = allContent.map(c => { const lines = c.split('\n'); return lines[lines.length - 1] }).filter(l => l.trim())
+      const closingCounts = {}
+      closings.forEach(c => { const k = c.trim().toLowerCase().slice(0, 40); closingCounts[k] = (closingCounts[k] || 0) + 1 })
+      const topClosing = Object.entries(closingCounts).sort((a, b) => b[1] - a[1])[0]
+      if (topClosing && topClosing[1] >= 1) profile.closing = closings.find(c => c.trim().toLowerCase().slice(0, 40) === topClosing[0])
+
       // 正式程度
-      const formalWords = ['sincerely', 'regards', 'respectfully', 'dear', ' respectfully', '敬启', '此致', '顺颂']
-      const formalCount = formalWords.reduce((n, w) => n + (allContent.toLowerCase().split(w).length - 1), 0)
-      features.push(`- 正式程度：${formalCount > 2 ? '正式' : formalCount > 0 ? '较正式' : '轻松'}`)
+      const fullText = allContent.join(' ').toLowerCase()
+      const formalWords = ['sincerely', 'regards', 'respectfully', 'dear', 'furthermore', 'accordingly', '敬启', '此致', '顺颂', '尊敬']
+      const casualWords = ['hey', 'hi', 'cheers', 'no worries', 'btw', '哈哈', '嗯嗯', '亲']
+      const formalScore = formalWords.reduce((n, w) => n + (fullText.split(w).length - 1), 0)
+      const casualScore = casualWords.reduce((n, w) => n + (fullText.split(w).length - 1), 0)
+      profile.tone = formalScore > casualScore + 2 ? '正式' : formalScore > casualScore ? '较正式' : casualScore > formalScore ? '轻松' : '适中'
+
+      // 句长偏好
+      const avgLen = Math.round(fullText.length / templatesForTone.length)
+      profile.length = avgLen > 800 ? '详细长文' : avgLen > 300 ? '中等长度' : '简洁短文'
+
+      // 常用表达（出现2次以上的3词组合）
+      const phrases = {}
+      allContent.forEach(c => {
+        const words = c.split(/\s+/).filter(Boolean)
+        for (let i = 0; i < words.length - 2; i++) {
+          const phrase = [words[i], words[i + 1], words[i + 2]].join(' ').toLowerCase().replace(/[^a-z\s]/g, '').trim()
+          if (phrase.length > 8 && phrase.length < 50) phrases[phrase] = (phrases[phrase] || 0) + 1
+        }
+      })
+      profile.commonExpressions = Object.entries(phrases)
+        .filter(([, count]) => count >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([phrase]) => phrase)
+
+      // 构建风格画像提示
+      const profileLines = [
+        '用户风格画像：',
+        `- 开头习惯：${profile.greeting || '无固定开头'}`,
+        `- 结尾习惯：${profile.closing || '无固定结尾'}`,
+        `- 正式程度：${profile.tone}`,
+        `- 句长偏好：${profile.length}`,
+        profile.commonExpressions.length ? `- 常用表达：${profile.commonExpressions.join('、')}` : ''
+      ].filter(Boolean).join('\n')
+
+      // 原始模板参考（截取）
+      const templateParts = allContent.slice(0, 3).map((c, i) => `【模板${i + 1}】\n${c.slice(0, 600)}`)
 
       return [
-        '以下是用户的个人回复模板（语气/措辞/风格参考）：',
-        parts.join('\n\n'),
-        '模板风格总结：',
-        features.join('\n'),
+        '以下是用户的个人回复风格画像和参考模板：',
+        profileLines,
+        '',
+        '参考模板：',
+        templateParts.join('\n\n'),
+        '',
         '写作要求：',
-        '1. 精准模仿用户的语气风格：正式程度、用词偏好、句式长短、开头结尾习惯',
-        '2. 参考模板的措辞习惯，但不要逐字照抄，根据当前案件内容灵活调整',
-        '3. 不要凭空添加未提及的承诺、时间点或信息',
-        '4. 保持与模板一致的礼貌程度和专业度',
-        '5. 如果模板中有固定的开头/结尾用语（如 Best regards），请沿用'
+        '1. 严格遵循风格画像：使用相同开头/结尾习惯、匹配正式程度和句长偏好',
+        '2. 优先使用常用表达中的措辞',
+        '3. 参考模板的措辞习惯，但根据当前案件内容灵活调整，不要逐字照抄',
+        '4. 不要凭空添加未提及的承诺、时间点或信息',
+        '5. 如果画像中有固定的开头/结尾用语，请沿用'
       ].join('\n')
     }
 
@@ -1088,6 +1156,8 @@
         cfModel: String(raw?.cfModel || DEFAULT_CF_MODEL).trim(),
         offlineModel: String(raw?.offlineModel || DEFAULT_OFFLINE_MODEL).trim(),
         hfMirror: String(raw?.hfMirror || '').trim(),
+        openrouterKey: String(raw?.openrouterKey || '').trim(),
+        openrouterModel: String(raw?.openrouterModel || 'meta-llama/llama-3.1-8b-instruct:free').trim(),
         baseUrl: normalizeBaseUrl(raw?.baseUrl || ''),
         model: String(raw?.model || '').trim(),
         apiKey: String(raw?.apiKey || '').trim(),
@@ -1220,6 +1290,50 @@
       }
     }
 
+    async function callOpenRouter(messages, cfg) {
+      if (!cfg.openrouterKey) throw new Error('OpenRouter 需要 API Key，请先在AI配置中填写')
+      const model = cfg.openrouterModel || 'meta-llama/llama-3.1-8b-instruct:free'
+      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : 10000
+      const controller = new AbortController()
+      const t = setTimeout(() => controller.abort(), timeoutMs)
+
+      try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cfg.openrouterKey}`,
+            'HTTP-Referer': location.origin,
+            'X-Title': 'Agent邮件案件处理助手'
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: cfg.temperature,
+            max_tokens: cfg.maxTokens
+          }),
+          signal: controller.signal
+        })
+
+        const text = await response.text()
+        const data = safeJsonParse(text, null)
+        if (!response.ok) {
+          const msg = data?.error?.message || data?.message || text || `请求失败（HTTP ${response.status}）`
+          throw new Error(String(msg))
+        }
+        const content = data?.choices?.[0]?.message?.content
+        if (!content) throw new Error('OpenRouter 返回为空或格式不正确')
+        return String(content).trim()
+      } catch (err) {
+        if (err && typeof err === 'object' && err.name === 'AbortError') {
+          throw new Error('AI响应超时（10秒）\n请重试或切换模型')
+        }
+        throw err
+      } finally {
+        clearTimeout(t)
+      }
+    }
+
     async function callOffline(messages, cfg) {
       const engine = await loadOfflineEngine(cfg.offlineModel || DEFAULT_OFFLINE_MODEL)
       const response = await engine.chat.completions.create({
@@ -1245,32 +1359,37 @@
         if (cfg.onlineProvider === 'cloudflare_workers_ai') {
           return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
         }
+        if (cfg.onlineProvider === 'openrouter') {
+          return await callOpenRouter(messages, { ...cfg, timeoutMs })
+        }
         return await callOpenAICompatDirect(messages, cfg)
       }
 
-      // auto 模式：依次尝试，环境不可用时快速跳过
+      // auto 模式：Cloudflare → OpenRouter → 离线 → OpenAI兼容
       const errors = []
-      if (cfg.onlineProvider === 'cloudflare_workers_ai') {
-        try {
-          return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
-        } catch (err) {
-          const msg = String(err?.message || err)
-          // 环境不可用（405等），不作为致命错误，静默跳过
-          if (!msg.includes('[ENV_UNAVAILABLE]')) {
-            errors.push(`Cloudflare Workers AI：${msg}`)
-          }
+      try {
+        return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+      } catch (err) {
+        const msg = String(err?.message || err)
+        if (!msg.includes('[ENV_UNAVAILABLE]')) {
+          errors.push(`Workers AI：${msg}`)
         }
       }
 
-      // 离线回退：仅使用已加载的引擎，不自动触发下载
+      if (cfg.openrouterKey) {
+        try {
+          return await callOpenRouter(messages, { ...cfg, timeoutMs })
+        } catch (err) {
+          errors.push(`OpenRouter：${String(err?.message || err)}`)
+        }
+      }
+
       if (offlineState.engine) {
         try {
           return await callOffline(messages, cfg)
         } catch (err) {
           errors.push(`离线模式：${String(err?.message || err)}`)
         }
-      } else {
-        errors.push('离线模式：未加载（请在AI配置中先加载离线模型）')
       }
 
       if (cfg.baseUrl && cfg.model && cfg.apiKey) {
@@ -2161,7 +2280,12 @@
     function getFilteredCases() {
       const filter = document.getElementById('time-filter').value
       const query = document.getElementById('search-filter').value.trim().toLowerCase()
+      const statusFilter = document.getElementById('status-filter').value
       let filtered = cases.slice()
+
+      if (statusFilter && statusFilter !== 'all') {
+        filtered = filtered.filter(c => (c.status || 'closed') === statusFilter)
+      }
 
       if (filter !== 'all') {
         const now = Date.now()
@@ -2403,6 +2527,7 @@
       document.getElementById('custom-range').style.display = val === 'custom' ? 'block' : 'none'
       renderHistory()
     })
+    document.getElementById('status-filter').addEventListener('change', renderHistory)
 
     let searchTimer = null
     document.getElementById('search-filter').addEventListener('input', () => {
@@ -2448,12 +2573,14 @@
       const offlinePanel = document.getElementById('offline-panel')
       const cloudflareOnline = document.getElementById('cloudflare-online')
       const openaiOnline = document.getElementById('openai-online')
+      const openrouterOnline = document.getElementById('openrouter-online')
 
       offlinePanel.style.display = mode === 'online' ? 'none' : 'block'
 
       const showOnline = mode !== 'offline'
       cloudflareOnline.style.display = showOnline && onlineProvider === 'cloudflare_workers_ai' ? 'block' : 'none'
       openaiOnline.style.display = showOnline && onlineProvider === 'openai_compat_direct' ? 'block' : 'none'
+      openrouterOnline.style.display = showOnline && onlineProvider === 'openrouter' ? 'block' : 'none'
     }
 
     function renderAiConfigForm() {
@@ -2463,6 +2590,8 @@
       document.getElementById('cf-model').value = cfg.cfModel
       document.getElementById('offline-model').value = cfg.offlineModel || DEFAULT_OFFLINE_MODEL
       document.getElementById('hf-mirror').value = cfg.hfMirror || ''
+      document.getElementById('openrouter-key').value = cfg.openrouterKey || ''
+      document.getElementById('openrouter-model').value = cfg.openrouterModel || 'meta-llama/llama-3.1-8b-instruct:free'
       document.getElementById('ai-base-url').value = cfg.baseUrl
       document.getElementById('ai-model').value = cfg.model
       document.getElementById('api-key').value = cfg.apiKey
@@ -2506,13 +2635,15 @@
       const cfModel = String(document.getElementById('cf-model').value || '').trim()
       const offlineModel = String(document.getElementById('offline-model').value || '').trim()
       const hfMirror = String(document.getElementById('hf-mirror').value || '').trim()
+      const openrouterKey = String(document.getElementById('openrouter-key').value || '').trim()
+      const openrouterModel = String(document.getElementById('openrouter-model').value || '').trim()
       const baseUrl = normalizeBaseUrl(document.getElementById('ai-base-url').value)
       const model = String(document.getElementById('ai-model').value || '').trim()
       const apiKey = String(document.getElementById('api-key').value || '').trim()
       const systemPrompt = String(document.getElementById('system-prompt').value || '').trim()
       const temperature = clampNumber(document.getElementById('ai-temperature').value, 0, 2, 0.7)
       const maxTokens = clampNumber(document.getElementById('ai-max-tokens').value, 128, 8192, 2048)
-      setAiConfig({ mode, onlineProvider, cfModel, offlineModel, hfMirror, baseUrl, model, apiKey, systemPrompt, temperature, maxTokens })
+      setAiConfig({ mode, onlineProvider, cfModel, offlineModel, hfMirror, openrouterKey, openrouterModel, baseUrl, model, apiKey, systemPrompt, temperature, maxTokens })
       toast('配置已保存')
       updateAiConfigVisibility()
     })
@@ -2521,20 +2652,98 @@
       setGlobalError('')
       const btn = document.getElementById('test-ai')
       setBusy(btn, '测试中...', true)
-      try {
-        // 走 callAI 的完整回退链，加 10 秒超时避免卡住
-        const res = await callAI('请只回复一个词：OK', { timeoutMs: 10000 })
-        toast(res.includes('OK') ? '测试成功' : '已返回结果')
-      } catch (err) {
-        const msg = String(err?.message || err)
-        let hint = msg
-        if (msg.includes('未加载') || msg.includes('离线模式')) {
-          hint = msg + '\n\n建议：1) 在 Cloudflare Pages 环境部署后访问；2) 先在AI配置中加载离线模型；3) 配置OpenAI兼容直连（需API Key）。'
+      const cfg = getAiConfig()
+      const start = Date.now()
+
+      // 依次测试各提供商，显示详细结果
+      const results = []
+
+      // 测试 Cloudflare Workers AI
+      if (cfg.mode !== 'offline') {
+        try {
+          const t0 = Date.now()
+          const res = await callCloudflareWorkersAI(
+            [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
+            { ...cfg, timeoutMs: 10000 }
+          )
+          const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+          results.push({ ok: true, provider: 'Cloudflare Workers AI', model: cfg.cfModel, elapsed })
+        } catch (err) {
+          const msg = String(err?.message || err)
+          if (msg.includes('[ENV_UNAVAILABLE]')) {
+            results.push({ ok: false, provider: 'Cloudflare Workers AI', error: '未绑定或不在 Pages 环境' })
+          } else if (msg.includes('超时')) {
+            results.push({ ok: false, provider: 'Cloudflare Workers AI', error: '响应超时（10秒）' })
+          } else {
+            results.push({ ok: false, provider: 'Cloudflare Workers AI', error: msg.slice(0, 100) })
+          }
         }
-        setGlobalError('AI连接测试失败：' + hint)
-      } finally {
-        setBusy(btn, '测试中...', false)
       }
+
+      // 测试 OpenRouter
+      if (cfg.openrouterKey && cfg.mode !== 'offline') {
+        try {
+          const t0 = Date.now()
+          const res = await callOpenRouter(
+            [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
+            { ...cfg, timeoutMs: 10000 }
+          )
+          const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+          results.push({ ok: true, provider: 'OpenRouter', model: cfg.openrouterModel, elapsed })
+        } catch (err) {
+          const msg = String(err?.message || err)
+          results.push({ ok: false, provider: 'OpenRouter', error: msg.includes('超时') ? '响应超时（10秒）' : msg.slice(0, 100) })
+        }
+      }
+
+      // 测试离线
+      if (offlineState.engine) {
+        try {
+          const t0 = Date.now()
+          const res = await callOffline(
+            [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
+            cfg
+          )
+          const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+          results.push({ ok: true, provider: '离线模型', model: offlineState.modelId, elapsed })
+        } catch (err) {
+          results.push({ ok: false, provider: '离线模型', error: String(err?.message || err).slice(0, 100) })
+        }
+      }
+
+      // 测试 OpenAI 兼容
+      if (cfg.baseUrl && cfg.model && cfg.apiKey && cfg.mode !== 'offline') {
+        try {
+          const t0 = Date.now()
+          const res = await callOpenAICompatDirect(
+            [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
+            cfg
+          )
+          const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+          results.push({ ok: true, provider: 'OpenAI兼容', model: cfg.model, elapsed })
+        } catch (err) {
+          results.push({ ok: false, provider: 'OpenAI兼容', error: String(err?.message || err).slice(0, 100) })
+        }
+      }
+
+      // 显示结果
+      if (!results.length) {
+        setGlobalError('无可测试的AI提供商。请先配置至少一个AI。')
+      } else {
+        const success = results.find(r => r.ok)
+        if (success) {
+          const lines = results.map(r => {
+            if (r.ok) return `✅ ${r.provider} | 模型：${r.model} | 耗时：${r.elapsed}秒`
+            return `❌ ${r.provider} | ${r.error}`
+          })
+          toast('连接成功\n' + lines.join('\n'))
+        } else {
+          const lines = results.map(r => `❌ ${r.provider} | ${r.error}`)
+          setGlobalError('AI连接测试失败：\n' + lines.join('\n'))
+        }
+      }
+
+      setBusy(btn, '测试中...', false)
     })
 
     // 初始化
