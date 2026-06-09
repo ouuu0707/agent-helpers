@@ -18,7 +18,7 @@
       color: #222;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
     .header {
@@ -200,6 +200,9 @@
       margin-bottom: 12px;
       color: #333;
     }
+    .archive-field { margin-bottom: 12px; }
+    .archive-field label { font-weight: 600; color: var(--primary); margin-bottom: 4px; display: block; }
+    .archive-field textarea { min-height: 60px; }
     .copy-btn {
       margin-top: 8px;
       padding: 8px 16px;
@@ -210,10 +213,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       align-items: start;
-    }
-    .output-grid textarea {
-      height: 220px;
-      margin-bottom: 8px;
     }
     .history-table {
       width: 100%;
@@ -316,6 +315,179 @@
     .dialog-close:hover {
       background: #f1f1f1;
     }
+    /* 三栏布局 */
+    .three-column-layout {
+      display: flex;
+      gap: 0;
+      min-height: calc(100vh - 140px);
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .left-panel {
+      width: 25%;
+      min-width: 180px;
+      background: #fafafa;
+      border-right: 1px solid #eee;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .center-panel {
+      width: 50%;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .right-panel {
+      width: 25%;
+      min-width: 180px;
+      background: #fafafa;
+      border-left: 1px solid #eee;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .case-list {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    .case-list-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 4px;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .case-list-item:hover {
+      background: #f0f0f0;
+    }
+    .case-list-item.active {
+      background: #e8f7ef;
+      border-color: #07c160;
+    }
+    .case-list-item .case-item-title {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .case-list-item .case-item-meta {
+      font-size: 12px;
+      color: #999;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .left-panel-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 12px;
+    }
+    .left-panel-actions .btn {
+      flex: 1;
+    }
+    /* 工作区Tab */
+    .workspace-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .workspace-tab {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .workspace-tab.active {
+      background: #07c160;
+      color: white;
+      border-color: #07c160;
+    }
+    .workspace-tab:hover:not(.active) {
+      background: #f5f5f5;
+    }
+    .ws-tab-content {
+      display: none;
+    }
+    .ws-tab-content.active {
+      display: block;
+    }
+    /* 右侧信息区 */
+    .info-field {
+      margin-bottom: 16px;
+    }
+    .info-field label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 14px;
+      color: #333;
+      word-break: break-word;
+    }
+    .info-timeline-list {
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .info-timeline-item {
+      padding: 4px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .info-timeline-item:last-child {
+      border-bottom: none;
+    }
+    .timeline-time {
+      color: #999;
+      font-size: 11px;
+    }
+    .timeline-label {
+      font-weight: 600;
+      color: #333;
+    }
+    /* 折叠面板 */
+    details.settings-panel {
+      margin-bottom: 16px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    details.settings-panel summary {
+      padding: 14px 16px;
+      background: #fafafa;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    details.settings-panel summary::before {
+      content: '▶';
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+    details.settings-panel[open] summary::before {
+      transform: rotate(90deg);
+    }
+    details.settings-panel .panel-body {
+      padding: 16px;
+    }
     @media (max-width: 720px) {
       body { padding: 10px; }
       .tab { padding: 10px 14px; font-size: 14px; }
@@ -324,6 +496,11 @@
       input[type="text"], input[type="password"], input[type="number"], input[type="date"], select { font-size: 14px; }
       .output-grid { grid-template-columns: 1fr; }
       .row > * { min-width: 100%; }
+      .three-column-layout { flex-direction: column; min-height: auto; }
+      .left-panel, .center-panel, .right-panel { width: 100%; min-width: unset; border: none; }
+      .left-panel { border-right: none; border-bottom: 1px solid #eee; }
+      .right-panel { border-left: none; border-top: 1px solid #eee; }
+      .case-list { max-height: 200px; }
     }
   </style>
 </head>
@@ -335,64 +512,150 @@
 
     <!-- Tab切换栏 -->
     <div class="tabs">
-      <button class="tab active" data-tab="quick-reply">邮件生成</button>
-      <button class="tab" data-tab="case-handle">案件处理</button>
-      <button class="tab" data-tab="template">模板管理</button>
-      <button class="tab" data-tab="history">案件管理</button>
-      <button class="tab" data-tab="ai-config">AI配置</button>
+      <button class="tab active" data-tab="case-center">案件中心</button>
+      <button class="tab" data-tab="history">历史案件</button>
+      <button class="tab" data-tab="settings">设置</button>
     </div>
 
-    <!-- 快速回复页 -->
-    <div class="tab-content active" id="quick-reply">
-      <div class="card">
-        <div class="card-title">输入需求，一键生成中英文邮件</div>
-        <textarea id="reply-input" placeholder="比如：我要回复客户，告诉他我已经收到他的邮件，会尽快处理"></textarea>
-
-        <div class="row">
-          <div>
-            <div class="pill">
-              <input id="use-tone" type="checkbox" checked>
-              <label for="use-tone">使用模板语气参考</label>
-            </div>
-            <div class="help">开启后会把你选中的模板作为“语气/措辞参考”，不逐字照抄。</div>
-          </div>
-          <div>
-            <label>参考模板（可多选）</label>
-            <select id="tone-template-select" multiple size="4"></select>
-            <div class="help">不选择时默认使用所有“用于语气学习”的模板。</div>
+    <!-- 案件中心页 -->
+    <div class="tab-content active" id="case-center">
+      <div class="three-column-layout">
+        <!-- 左侧：案件列表 -->
+        <div class="left-panel">
+          <button id="new-draft" class="btn btn-primary" style="width:100%;margin-bottom:8px;">新建案件</button>
+          <input type="text" id="case-search" placeholder="搜索案件..." style="margin-bottom:8px;">
+          <select id="case-filter-status" style="margin-bottom:8px;">
+            <option value="all">全部状态</option>
+            <option value="processing">🟡处理中</option>
+            <option value="waiting_dev">🔵等待开发</option>
+            <option value="waiting_customer">🟣等待客户</option>
+            <option value="resolved">🟢已解决</option>
+            <option value="closed">⚫已结案</option>
+          </select>
+          <div id="case-list" class="case-list"></div>
+          <div class="left-panel-actions">
+            <button id="rename-draft" class="btn btn-secondary copy-btn">重命名</button>
+            <button id="close-draft" class="btn btn-danger copy-btn">关闭</button>
           </div>
         </div>
 
-        <button id="generate-reply" class="btn btn-primary">生成中英文邮件</button>
+        <!-- 中间：Tab工作区 -->
+        <div class="center-panel">
+          <div class="workspace-tabs">
+            <button class="workspace-tab active" data-ws-tab="ws-analysis">邮件分析</button>
+            <button class="workspace-tab" data-ws-tab="ws-dev-consult">开发咨询</button>
+            <button class="workspace-tab" data-ws-tab="ws-customer-reply">客户回复</button>
+            <button class="workspace-tab" data-ws-tab="ws-followup">后续回复</button>
+            <button class="workspace-tab" data-ws-tab="ws-archive">结案归档</button>
+          </div>
 
-        <div id="reply-output" class="section" style="display:none; margin-top:16px;">
-          <div class="output-grid">
-            <div>
-              <div class="section-title">中文邮件（可编辑）</div>
-              <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
-              <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
+          <!-- Tab1: 邮件分析 -->
+          <div class="ws-tab-content active" id="ws-analysis">
+            <textarea id="case-input" placeholder="把客户发来的英文邮件/案件内容粘贴到这里"></textarea>
+            <button id="process-case" class="btn btn-primary">AI处理案件</button>
+
+            <div id="analysis-result" style="display: none;">
+              <div class="section">
+                <div class="section-title">案件摘要</div>
+                <ul id="checklist" class="checklist"></ul>
+              </div>
             </div>
-            <div>
-              <div class="section-title">英文邮件（可编辑）</div>
-              <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
-              <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
+          </div>
+
+          <!-- Tab2: 开发咨询 -->
+          <div class="ws-tab-content" id="ws-dev-consult">
+            <div class="section">
+              <div class="section-title">给开发的转发邮件/话术（中文，可编辑）</div>
+              <textarea id="dev-msg" placeholder="AI处理案件后生成，或手动填写"></textarea>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary copy-btn" data-copy-target="dev-msg">复制</button>
+                <button id="regen-dev-msg" class="btn btn-primary" style="font-size:14px;">重新生成</button>
+              </div>
             </div>
+          </div>
+
+          <!-- Tab3: 客户回复 -->
+          <div class="ws-tab-content" id="ws-customer-reply">
+            <div class="section">
+              <div class="section-title">给客户的英文回复（可编辑）</div>
+              <textarea id="client-msg-en" placeholder="AI处理案件后生成，或手动填写"></textarea>
+              <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
+
+              <div class="section-title" style="margin-top: 16px;">中文翻译（可编辑）</div>
+              <textarea id="client-msg-zh" placeholder="AI处理案件后生成，或手动填写"></textarea>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
+                <button id="regen-customer-reply" class="btn btn-primary" style="font-size:14px;">重新生成</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab4: 后续回复 -->
+          <div class="ws-tab-content" id="ws-followup">
+            <div class="section">
+              <div class="section-title">客户后续回复（粘贴后生成对应回复 + 开发沟通话术）</div>
+              <textarea id="customer-followup" placeholder="把客户后续回复粘贴到这里"></textarea>
+              <button id="generate-followup" class="btn btn-primary">生成后续回复</button>
+              <div id="followup-output" style="display:none; margin-top:12px;">
+                <div class="output-grid">
+                  <div>
+                    <div class="section-title">后续：给客户英文回复（可编辑）</div>
+                    <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
+                  </div>
+                  <div>
+                    <div class="section-title">后续：中文翻译（可编辑）</div>
+                    <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
+                  </div>
+                </div>
+                <div style="margin-top:12px;">
+                  <div class="section-title">后续：给开发的沟通话术（中文，可编辑）</div>
+                  <textarea id="followup-dev-zh" placeholder="生成后会出现在这里"></textarea>
+                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-dev-zh">复制</button>
+                </div>
+                <div style="margin-top:12px;" id="next-action-section">
+                  <div class="section-title">下一步行动</div>
+                  <input type="text" id="next-action" readonly style="background:#f9f9f9;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab5: 结案归档 -->
+          <div class="ws-tab-content" id="ws-archive">
+            <button id="ai-summarize-case" class="btn btn-secondary">AI生成结案总结</button>
+            <div class="archive-field">
+              <label>【案件描述】</label>
+              <textarea id="archive-description" placeholder="案件问题描述（AI自动生成或手动填写）"></textarea>
+            </div>
+            <div class="archive-field">
+              <label>【解决方案】</label>
+              <textarea id="solution-input" placeholder="最终解决方案（AI自动生成或手动填写）"></textarea>
+            </div>
+            <div class="archive-field">
+              <label>【备注】</label>
+              <textarea id="remark-input" placeholder="补充信息/影响范围/后续行动"></textarea>
+            </div>
+            <div class="archive-field">
+              <label>【案件根本原因】</label>
+              <textarea id="root-cause-input" placeholder="根因分析（如不确定写"待确认"）"></textarea>
+            </div>
+            <div class="row" style="gap:12px; margin-top:16px;">
+              <button id="auto-fill-archive" class="btn btn-secondary" title="将AI生成的结案报告自动填入上方表单，你仍可修改后再归档">📋 带入归档内容</button>
+              <button id="finish-case" class="btn btn-primary" title="将当前表单内容保存到历史案件库，案件状态变为已结案">💾 归档到历史记录</button>
+            </div>
+            <div class="help" style="margin-top:8px;">流程：AI生成结案总结 → 带入归档内容 → 检查修改 → 归档到历史记录</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 案件处理页 -->
-    <div class="tab-content" id="case-handle">
-      <div class="card">
-        <div class="card-title">粘贴客户的英文案件内容</div>
-        <div class="row">
-          <div>
-            <label>案件工作台（可并行）</label>
-            <div id="draft-tabs" class="draft-tabs"></div>
-            <div class="muted" id="draft-hint">切换案件不会丢进度：所有输入与AI结果都会自动保存到本地。</div>
+        <!-- 右侧：案件信息 -->
+        <div class="right-panel">
+          <div class="info-field">
+            <label>案件编号</label>
+            <div id="info-case-id" class="info-value">-</div>
           </div>
-          <div class="tight" style="min-width:unset;">
+          <div class="info-field">
             <label>状态</label>
             <select id="case-status">
               <option value="processing">🟡处理中</option>
@@ -402,131 +665,39 @@
               <option value="closed">⚫已结案</option>
             </select>
           </div>
-          <div class="tight" style="min-width:unset; display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="new-draft" class="btn btn-secondary copy-btn">新建案件</button>
-            <button id="rename-draft" class="btn btn-secondary copy-btn">重命名</button>
-            <button id="close-draft" class="btn btn-danger copy-btn">关闭</button>
+          <div class="info-field">
+            <label>分类</label>
+            <div id="info-category" class="info-value">-</div>
           </div>
-        </div>
-        <textarea id="case-input" placeholder="把客户发来的英文邮件/案件内容粘贴到这里"></textarea>
-        <button id="process-case" class="btn btn-primary">AI处理案件</button>
-        
-        <div id="case-result" style="display: none;">
-          <div class="section">
-            <div class="section-title">案件摘要</div>
-            <div class="row">
-              <div>
-                <label>分类</label>
-                <input type="text" id="case-category" placeholder="如：支付问题/登录问题/数据问题/功能异常/其他">
-              </div>
-              <div>
-                <label>优先级</label>
-                <select id="case-priority">
-                  <option value="">请选择</option>
-                  <option value="高">高</option>
-                  <option value="中">中</option>
-                  <option value="低">低</option>
-                </select>
-              </div>
-            </div>
-            <label>客户诉求（一句话）</label>
-            <input type="text" id="case-request" placeholder="一句话总结客户核心诉求">
+          <div class="info-field">
+            <label>优先级</label>
+            <div id="info-priority" class="info-value">-</div>
           </div>
-          <div class="section">
-            <div class="section-title">案件自查步骤</div>
-            <ul id="checklist" class="checklist"></ul>
+          <div class="info-field">
+            <label>客户诉求</label>
+            <div id="info-request" class="info-value">-</div>
           </div>
-          
-          <div class="section">
-            <div class="section-title">给开发的转发邮件/话术（中文，可编辑）</div>
-            <textarea id="dev-msg" placeholder="生成后会出现在这里"></textarea>
-            <button class="btn btn-secondary copy-btn" data-copy-target="dev-msg">复制</button>
+          <div class="info-field">
+            <label>创建时间</label>
+            <div id="info-created" class="info-value">-</div>
           </div>
-          
-          <div class="section">
-            <div class="section-title">给客户的英文回复（可编辑）</div>
-            <textarea id="client-msg-en" placeholder="生成后会出现在这里"></textarea>
-            <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
-
-            <div class="section-title" style="margin-top: 16px;">中文翻译（可编辑）</div>
-            <textarea id="client-msg-zh" placeholder="生成后会出现在这里"></textarea>
-            <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
+          <div class="info-field">
+            <label>更新时间</label>
+            <div id="info-updated" class="info-value">-</div>
           </div>
-
-          <div class="section">
-            <div class="section-title">客户后续回复（粘贴后生成对应回复 + 开发沟通话术）</div>
-            <textarea id="customer-followup" placeholder="把客户后续回复粘贴到这里"></textarea>
-            <button id="generate-followup" class="btn btn-primary">生成后续回复</button>
-            <div id="followup-output" style="display:none; margin-top:12px;">
-              <div class="output-grid">
-                <div>
-                  <div class="section-title">后续：给客户英文回复（可编辑）</div>
-                  <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
-                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
-                </div>
-                <div>
-                  <div class="section-title">后续：中文翻译（可编辑）</div>
-                  <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
-                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
-                </div>
-              </div>
-              <div style="margin-top:12px;">
-                <div class="section-title">后续：给开发的沟通话术（中文，可编辑）</div>
-                <textarea id="followup-dev-zh" placeholder="生成后会出现在这里"></textarea>
-                <button class="btn btn-secondary copy-btn" data-copy-target="followup-dev-zh">复制</button>
-              </div>
-              <div style="margin-top:12px;" id="next-action-section">
-                <div class="section-title">下一步行动</div>
-                <input type="text" id="next-action" readonly style="background:#f9f9f9;">
-              </div>
-            </div>
+          <div class="info-field">
+            <label>结案时间</label>
+            <div id="info-closed-at" class="info-value">-</div>
           </div>
-          
-          <div class="section">
-            <div class="section-title">结案（自动生成结构化总结，可编辑后保存）</div>
-            <button id="ai-summarize-case" class="btn btn-secondary">AI生成结案总结</button>
-            <textarea id="solution-input" placeholder="请输入解决方案："></textarea>
-            <textarea id="remark-input" placeholder="请输入备注："></textarea>
-            <textarea id="root-cause-input" placeholder="请输入根本原因："></textarea>
-            <div class="row">
-              <button id="auto-fill-archive" class="btn btn-secondary">一键带入归档内容</button>
-              <button id="finish-case" class="btn btn-primary">一键归档到历史记录</button>
-            </div>
+          <div class="info-field">
+            <label>Timeline</label>
+            <div id="info-timeline" class="info-timeline-list">-</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 模板管理页 -->
-    <div class="tab-content" id="template">
-      <div class="card">
-        <div class="card-title">添加回复模板</div>
-        <input type="text" id="template-name" placeholder="模板名称">
-        <textarea id="template-content" placeholder="模板内容"></textarea>
-        <div class="pill" style="margin-bottom:12px;">
-          <input id="template-tone" type="checkbox" checked>
-          <label for="template-tone">用于语气学习</label>
-        </div>
-        <button id="add-template" class="btn btn-primary">添加模板</button>
-      </div>
-      
-      <div class="card">
-        <div class="card-title">我的模板</div>
-        <div class="row">
-          <div>
-            <label>导入模板（JSON）</label>
-            <input id="import-templates" type="file" accept="application/json">
-            <div class="help">支持导入本应用导出的JSON文件。</div>
-          </div>
-          <div class="tight" style="min-width:unset;">
-            <button id="export-templates" class="btn btn-secondary">导出模板JSON</button>
-          </div>
-        </div>
-        <div id="template-list"></div>
-      </div>
-    </div>
-
-    <!-- 历史记录页 -->
+    <!-- 历史案件页 -->
     <div class="tab-content" id="history">
       <div class="card">
         <div class="card-title">案件列表</div>
@@ -588,120 +759,197 @@
       </div>
     </div>
 
-    <div class="tab-content" id="ai-config">
-      <div class="card">
-        <div class="card-title">AI配置（仅存本地 localStorage）</div>
-        <div class="row">
-          <div>
-            <label>模式</label>
-            <select id="ai-mode">
-              <option value="online">在线（Cloudflare Workers AI）</option>
-              <option value="auto">自动（优先在线，失败回退离线）</option>
-              <option value="offline">离线（无需 Key）</option>
-            </select>
-          </div>
-          <div>
-            <label>在线提供商</label>
-            <select id="online-provider">
-              <option value="cloudflare_workers_ai">Cloudflare Workers AI（推荐）</option>
-              <option value="openrouter">OpenRouter（多模型聚合）</option>
-              <option value="openai_compat_direct">OpenAI兼容（浏览器直连）</option>
-            </select>
-          </div>
-        </div>
+    <!-- 设置页 -->
+    <div class="tab-content" id="settings">
+      <!-- 快捷邮件生成器 -->
+      <details class="settings-panel" open>
+        <summary>快捷邮件生成器</summary>
+        <div class="panel-body">
+          <div class="card-title">输入需求，一键生成中英文邮件</div>
+          <textarea id="reply-input" placeholder="比如：我要回复客户，告诉他我已经收到他的邮件，会尽快处理"></textarea>
 
-        <div id="cloudflare-online" style="display:block;">
           <div class="row">
             <div>
-              <label>Cloudflare 模型</label>
-              <input type="text" id="cf-model" placeholder="比如：@cf/meta/llama-3.1-8b-instruct">
-              <div class="help">需要在 Cloudflare Pages 项目中绑定 AI（使 Functions 可访问 env.AI）。</div>
+              <div class="pill">
+                <input id="use-tone" type="checkbox" checked>
+                <label for="use-tone">使用模板语气参考</label>
+              </div>
+              <div class="help">开启后会把你选中的模板作为"语气/措辞参考"，不逐字照抄。</div>
+            </div>
+            <div>
+              <label>参考模板（可多选）</label>
+              <select id="tone-template-select" multiple size="4"></select>
+              <div class="help">不选择时默认使用所有"用于语气学习"的模板。</div>
             </div>
           </div>
-        </div>
 
-        <div id="openai-online" style="display:none;">
-          <div class="row">
-            <div>
-              <label>Base URL</label>
-              <input type="text" id="ai-base-url" placeholder="比如：https://api.moonshot.cn/v1">
-            </div>
-            <div>
-              <label>模型</label>
-              <input type="text" id="ai-model" placeholder="比如：moonshot-v1-8k / doubao-lite-32k">
-            </div>
-          </div>
-          <div class="row">
-            <div>
-              <label>API Key</label>
-              <input type="password" id="api-key" placeholder="输入你的API Key">
-              <div class="help">纯前端直连会暴露 Key，请用权限受限/可随时撤销的 Key。</div>
+          <button id="generate-reply" class="btn btn-primary">生成中英文邮件</button>
+
+          <div id="reply-output" class="section" style="display:none; margin-top:16px;">
+            <div class="output-grid">
+              <div>
+                <div class="section-title">中文邮件（可编辑）</div>
+                <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
+                <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
+              </div>
+              <div>
+                <div class="section-title">英文邮件（可编辑）</div>
+                <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
+                <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
+              </div>
             </div>
           </div>
         </div>
+      </details>
 
-        <div id="openrouter-online" style="display:none;">
+      <!-- 模板管理 -->
+      <details class="settings-panel">
+        <summary>模板管理</summary>
+        <div class="panel-body">
+          <div class="card-title">添加回复模板</div>
+          <input type="text" id="template-name" placeholder="模板名称">
+          <textarea id="template-content" placeholder="模板内容"></textarea>
+          <div class="pill" style="margin-bottom:12px;">
+            <input id="template-tone" type="checkbox" checked>
+            <label for="template-tone">用于语气学习</label>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button id="add-template" class="btn btn-primary">添加模板</button>
+            <button id="reset-style-profile" class="btn btn-secondary">重新学习风格</button>
+          </div>
+
+          <div class="card-title">我的模板</div>
           <div class="row">
             <div>
-              <label>OpenRouter API Key</label>
-              <input type="password" id="openrouter-key" placeholder="输入 OpenRouter API Key">
-              <div class="help">在 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 获取。</div>
+              <label>导入模板（JSON）</label>
+              <input id="import-templates" type="file" accept="application/json">
+              <div class="help">支持导入本应用导出的JSON文件。</div>
             </div>
-            <div>
-              <label>OpenRouter 模型</label>
-              <input type="text" id="openrouter-model" placeholder="比如：meta-llama/llama-3.1-8b-instruct:free">
-              <div class="help">支持免费和付费模型，详见 <a href="https://openrouter.ai/models" target="_blank" rel="noopener">模型列表</a>。</div>
+            <div class="tight" style="min-width:unset;">
+              <button id="export-templates" class="btn btn-secondary">导出模板JSON</button>
             </div>
           </div>
+          <div id="template-list"></div>
         </div>
+      </details>
 
-        <div id="offline-panel" style="display:block;">
+      <!-- AI配置 -->
+      <details class="settings-panel">
+        <summary>AI配置</summary>
+        <div class="panel-body">
+          <div class="card-title">AI配置（仅存本地 localStorage）</div>
           <div class="row">
             <div>
-              <label>离线模型（首次会下载，之后可离线使用）</label>
-              <select id="offline-model">
-                <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama-3.2 1B（推荐，约 0.9GB）</option>
-                <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2 3B（更好，约 2.3GB）</option>
-                <option value="SmolLM2-360M-Instruct-q0f16-MLC">SmolLM2 360M（更小，更快）</option>
+              <label>模式</label>
+              <select id="ai-mode">
+                <option value="online">在线（Cloudflare Workers AI）</option>
+                <option value="auto">自动（优先在线，失败回退离线）</option>
+                <option value="offline">离线（无需 Key）</option>
               </select>
-              <div id="offline-status" class="help">离线模型：未加载</div>
             </div>
-          </div>
-          <div class="row">
-            <button id="offline-load" class="btn btn-secondary">加载离线模型</button>
-            <button id="offline-unload" class="btn btn-secondary">卸载离线模型</button>
-          </div>
-          <div class="help">离线模式使用 WebGPU（推荐 Chrome/Edge）。部分设备可能不支持或内存不足。</div>
-          <div class="row" style="margin-top:8px;">
             <div>
-              <label>HuggingFace 镜像（国内用户必填）</label>
-              <select id="hf-mirror">
-                <option value="">不使用镜像（直连 huggingface.co）</option>
-                <option value="hf-mirror.com" selected>hf-mirror.com（国内推荐）</option>
+              <label>在线提供商</label>
+              <select id="online-provider">
+                <option value="cloudflare_workers_ai">Cloudflare Workers AI（推荐）</option>
+                <option value="openrouter">OpenRouter（多模型聚合）</option>
+                <option value="openai_compat_direct">OpenAI兼容（浏览器直连）</option>
               </select>
-              <div class="help">国内网络无法访问 huggingface.co，需使用镜像下载模型文件。</div>
             </div>
           </div>
-        </div>
 
-        <div class="row">
-          <div>
-            <label>温度 (temperature)</label>
-            <input type="number" id="ai-temperature" min="0" max="2" step="0.1">
+          <div id="cloudflare-online" style="display:block;">
+            <div class="row">
+              <div>
+                <label>Cloudflare 模型</label>
+                <input type="text" id="cf-model" placeholder="比如：@cf/meta/llama-3.1-8b-instruct">
+                <div class="help">需要在 Cloudflare Pages 项目中绑定 AI（使 Functions 可访问 env.AI）。</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label>最大输出 (max_tokens)</label>
-            <input type="number" id="ai-max-tokens" min="128" max="8192" step="64">
+
+          <div id="openai-online" style="display:none;">
+            <div class="row">
+              <div>
+                <label>Base URL</label>
+                <input type="text" id="ai-base-url" placeholder="比如：https://api.moonshot.cn/v1">
+              </div>
+              <div>
+                <label>模型</label>
+                <input type="text" id="ai-model" placeholder="比如：moonshot-v1-8k / doubao-lite-32k">
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <label>API Key</label>
+                <input type="password" id="api-key" placeholder="输入你的API Key">
+                <div class="help">纯前端直连会暴露 Key，请用权限受限/可随时撤销的 Key。</div>
+              </div>
+            </div>
           </div>
+
+          <div id="openrouter-online" style="display:none;">
+            <div class="row">
+              <div>
+                <label>OpenRouter API Key</label>
+                <input type="password" id="openrouter-key" placeholder="输入 OpenRouter API Key">
+                <div class="help">在 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 获取。</div>
+              </div>
+              <div>
+                <label>OpenRouter 模型</label>
+                <input type="text" id="openrouter-model" placeholder="比如：meta-llama/llama-3.1-8b-instruct:free">
+                <div class="help">支持免费和付费模型，详见 <a href="https://openrouter.ai/models" target="_blank" rel="noopener">模型列表</a>。</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="offline-panel" style="display:block;">
+            <div class="row">
+              <div>
+                <label>离线模型（首次会下载，之后可离线使用）</label>
+                <select id="offline-model">
+                  <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama-3.2 1B（推荐，约 0.9GB）</option>
+                  <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2 3B（更好，约 2.3GB）</option>
+                  <option value="SmolLM2-360M-Instruct-q0f16-MLC">SmolLM2 360M（更小，更快）</option>
+                </select>
+                <div id="offline-status" class="help">离线模型：未加载</div>
+              </div>
+            </div>
+            <div class="row">
+              <button id="offline-load" class="btn btn-secondary">加载离线模型</button>
+              <button id="offline-unload" class="btn btn-secondary">卸载离线模型</button>
+            </div>
+            <div class="help">离线模式使用 WebGPU（推荐 Chrome/Edge）。部分设备可能不支持或内存不足。</div>
+            <div class="row" style="margin-top:8px;">
+              <div>
+                <label>HuggingFace 镜像（国内用户必填）</label>
+                <select id="hf-mirror">
+                  <option value="">不使用镜像（直连 huggingface.co）</option>
+                  <option value="hf-mirror.com" selected>hf-mirror.com（国内推荐）</option>
+                </select>
+                <div class="help">国内网络无法访问 huggingface.co，需使用镜像下载模型文件。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>温度 (temperature)</label>
+              <input type="number" id="ai-temperature" min="0" max="2" step="0.1">
+            </div>
+            <div>
+              <label>最大输出 (max_tokens)</label>
+              <input type="number" id="ai-max-tokens" min="128" max="8192" step="64">
+            </div>
+          </div>
+          <label>系统提示词（可编辑）</label>
+          <textarea id="system-prompt" style="height:140px;"></textarea>
+          <div class="row">
+            <button id="save-config" class="btn btn-primary">保存配置</button>
+            <button id="test-ai" class="btn btn-secondary">测试连接</button>
+          </div>
+          <div class="help">自动模式会优先走 Cloudflare Workers AI（同源 /api/ai），不可用时回退离线；你也可以切到"在线（OpenAI兼容直连）"。</div>
         </div>
-        <label>系统提示词（可编辑）</label>
-        <textarea id="system-prompt" style="height:140px;"></textarea>
-        <div class="row">
-          <button id="save-config" class="btn btn-primary">保存配置</button>
-          <button id="test-ai" class="btn btn-secondary">测试连接</button>
-        </div>
-        <div class="help">自动模式会优先走 Cloudflare Workers AI（同源 /api/ai），不可用时回退离线；你也可以切到“在线（OpenAI兼容直连）”。</div>
-      </div>
+      </details>
     </div>
   </div>
 
@@ -786,7 +1034,8 @@
       cases: 'cases',
       aiConfig: 'aiConfig',
       caseDrafts: 'caseDrafts',
-      activeDraftId: 'activeDraftId'
+      activeDraftId: 'activeDraftId',
+      styleProfile: 'styleProfile'
     }
 
     const DEFAULT_CF_MODEL = '@cf/meta/llama-3.1-8b-instruct'
@@ -806,6 +1055,8 @@
       '要求：不编造事实；不输出与请求无关的内容；必要时明确需要的信息；语言自然、语气符合用户风格参考。',
       '输出：按用户指定的结构输出。'
     ].join('\n')
+
+    const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~180词，中文翻译80~180字，开发咨询50~120字。禁止重复表达、过度客套、无意义寒暄。'
 
     function safeJsonParse(str, fallback) {
       if (typeof str !== 'string' || !str.trim()) return fallback
@@ -901,6 +1152,71 @@
       return null
     }
 
+    // 3层解析函数
+    function parseAIOutput(raw, fields) {
+      const result = {}
+
+      // 第一层：JSON解析
+      const json = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+      if (json) {
+        let hasAny = false
+        for (const f of fields) {
+          if (json[f] && String(json[f]).trim()) {
+            result[f] = String(json[f]).trim()
+            hasAny = true
+          }
+        }
+        if (hasAny) return result
+      }
+
+      // 第二层：容错标题解析
+      const sectionMap = {
+        developerMessage: ['开发咨询', '开发话术', 'developer', 'dev'],
+        customerReplyCn: ['客户回复中文', '中文回复', '中文翻译', 'chinese'],
+        customerReplyEn: ['客户回复英文', '英文回复', 'english', 'customer reply'],
+        caseDescription: ['案件描述', '问题描述', 'description'],
+        solution: ['解决方案', 'solution'],
+        remark: ['备注', 'remark'],
+        rootCause: ['根本原因', '根因', 'root cause']
+      }
+
+      const sections = raw.split(/(?:【|◇|▪|▶|►|■|●|◆)/)
+      for (const sec of sections) {
+        const lower = sec.toLowerCase().slice(0, 30)
+        for (const [field, keywords] of Object.entries(sectionMap)) {
+          if (!result[field] && fields.includes(field)) {
+            for (const kw of keywords) {
+              if (lower.includes(kw.toLowerCase())) {
+                result[field] = sec.replace(/^.*?[\n:：]/, '').trim().slice(0, 2000)
+                break
+              }
+            }
+          }
+        }
+      }
+
+      let hasAny = Object.keys(result).length > 0
+      if (hasAny) return result
+
+      // 第三层：关键词识别（按行扫描）
+      const lines = raw.split('\n').filter(l => l.trim())
+      for (const line of lines) {
+        const lower = line.toLowerCase()
+        for (const [field, keywords] of Object.entries(sectionMap)) {
+          if (!result[field] && fields.includes(field)) {
+            for (const kw of keywords) {
+              if (lower.startsWith(kw.toLowerCase()) && lower.includes(':')) {
+                result[field] = line.replace(/^.*?:\s*/, '').trim().slice(0, 2000)
+                break
+              }
+            }
+          }
+        }
+      }
+
+      return result
+    }
+
     function pickToneTemplates(allTemplates, selectedIds) {
       const byId = new Map(allTemplates.map(t => [t.id, t]))
       const picked = Array.isArray(selectedIds) && selectedIds.length
@@ -912,80 +1228,68 @@
     function buildToneReference(templatesForTone) {
       if (!templatesForTone.length) return ''
 
-      // AI风格画像：从模板中提取共同特征
+      // 检查缓存
+      const cached = safeJsonParse(localStorage.getItem(STORAGE_KEYS.styleProfile), null)
+      if (cached && cached.style) {
+        return [
+          '用户风格画像：',
+          `- 语气：${cached.tone || '适中'}`,
+          `- 长度：${cached.length || '中等'}`,
+          `- 开头：${cached.greeting || '无固定'}`,
+          `- 结尾：${cached.closing || '无固定'}`,
+          `- 风格：${cached.style}`,
+          '',
+          '写作要求：严格遵循此风格画像，不编造信息，不添加未提及的承诺。'
+        ].join('\n')
+      }
+
+      // 从模板提取画像
       const allContent = templatesForTone.map(t => String(t.content || '').trim()).filter(Boolean)
       if (!allContent.length) return ''
 
-      // 提取风格画像
-      const profile = { greeting: '', closing: '', tone: '', length: '', commonExpressions: [] }
+      const profile = { tone: 'neutral', length: 'medium', greeting: '', closing: '', style: '简洁直接' }
 
       // 开头习惯
       const greetings = allContent.map(c => c.split('\n')[0]).filter(Boolean)
-      const greetingCounts = {}
-      greetings.forEach(g => { const k = g.trim().toLowerCase().slice(0, 40); greetingCounts[k] = (greetingCounts[k] || 0) + 1 })
-      const topGreeting = Object.entries(greetingCounts).sort((a, b) => b[1] - a[1])[0]
-      if (topGreeting && topGreeting[1] >= 1) profile.greeting = greetings.find(g => g.trim().toLowerCase().slice(0, 40) === topGreeting[0])
+      if (greetings.length) profile.greeting = greetings[0].slice(0, 60)
 
       // 结尾习惯
       const closings = allContent.map(c => { const lines = c.split('\n'); return lines[lines.length - 1] }).filter(l => l.trim())
-      const closingCounts = {}
-      closings.forEach(c => { const k = c.trim().toLowerCase().slice(0, 40); closingCounts[k] = (closingCounts[k] || 0) + 1 })
-      const topClosing = Object.entries(closingCounts).sort((a, b) => b[1] - a[1])[0]
-      if (topClosing && topClosing[1] >= 1) profile.closing = closings.find(c => c.trim().toLowerCase().slice(0, 40) === topClosing[0])
+      if (closings.length) profile.closing = closings[0].slice(0, 60)
 
       // 正式程度
       const fullText = allContent.join(' ').toLowerCase()
-      const formalWords = ['sincerely', 'regards', 'respectfully', 'dear', 'furthermore', 'accordingly', '敬启', '此致', '顺颂', '尊敬']
-      const casualWords = ['hey', 'hi', 'cheers', 'no worries', 'btw', '哈哈', '嗯嗯', '亲']
+      const formalWords = ['sincerely', 'regards', 'respectfully', 'dear', '敬启', '此致', '尊敬']
+      const casualWords = ['hey', 'hi', 'cheers', '哈哈', '嗯嗯', '亲']
       const formalScore = formalWords.reduce((n, w) => n + (fullText.split(w).length - 1), 0)
       const casualScore = casualWords.reduce((n, w) => n + (fullText.split(w).length - 1), 0)
-      profile.tone = formalScore > casualScore + 2 ? '正式' : formalScore > casualScore ? '较正式' : casualScore > formalScore ? '轻松' : '适中'
+      profile.tone = formalScore > casualScore + 2 ? 'professional' : formalScore > casualScore ? 'neutral' : 'casual'
 
       // 句长偏好
       const avgLen = Math.round(fullText.length / templatesForTone.length)
-      profile.length = avgLen > 800 ? '详细长文' : avgLen > 300 ? '中等长度' : '简洁短文'
+      profile.length = avgLen > 800 ? 'long' : avgLen > 300 ? 'medium' : 'short'
 
-      // 常用表达（出现2次以上的3词组合）
-      const phrases = {}
-      allContent.forEach(c => {
-        const words = c.split(/\s+/).filter(Boolean)
-        for (let i = 0; i < words.length - 2; i++) {
-          const phrase = [words[i], words[i + 1], words[i + 2]].join(' ').toLowerCase().replace(/[^a-z\s]/g, '').trim()
-          if (phrase.length > 8 && phrase.length < 50) phrases[phrase] = (phrases[phrase] || 0) + 1
-        }
-      })
-      profile.commonExpressions = Object.entries(phrases)
-        .filter(([, count]) => count >= 2)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([phrase]) => phrase)
+      // 风格描述
+      const styleTraits = []
+      if (profile.tone === 'professional') styleTraits.push('正式')
+      else if (profile.tone === 'casual') styleTraits.push('轻松')
+      if (profile.length === 'short') styleTraits.push('简洁')
+      else if (profile.length === 'long') styleTraits.push('详细')
+      styleTraits.push('直接')
+      profile.style = styleTraits.join('、') + '，少解释'
 
-      // 构建风格画像提示
-      const profileLines = [
-        '用户风格画像：',
-        `- 开头习惯：${profile.greeting || '无固定开头'}`,
-        `- 结尾习惯：${profile.closing || '无固定结尾'}`,
-        `- 正式程度：${profile.tone}`,
-        `- 句长偏好：${profile.length}`,
-        profile.commonExpressions.length ? `- 常用表达：${profile.commonExpressions.join('、')}` : ''
-      ].filter(Boolean).join('\n')
-
-      // 原始模板参考（截取）
-      const templateParts = allContent.slice(0, 3).map((c, i) => `【模板${i + 1}】\n${c.slice(0, 600)}`)
+      // 保存画像
+      localStorage.setItem(STORAGE_KEYS.styleProfile, JSON.stringify(profile))
 
       return [
-        '以下是用户的个人回复风格画像和参考模板：',
-        profileLines,
+        '用户风格画像：',
+        `- 语气：${profile.tone}`,
+        `- 长度：${profile.length}`,
+        `- 开头：${profile.greeting || '无固定'}`,
+        `- 结尾：${profile.closing || '无固定'}`,
+        `- 风格：${profile.style}`,
         '',
-        '参考模板：',
-        templateParts.join('\n\n'),
-        '',
-        '写作要求：',
-        '1. 严格遵循风格画像：使用相同开头/结尾习惯、匹配正式程度和句长偏好',
-        '2. 优先使用常用表达中的措辞',
-        '3. 参考模板的措辞习惯，但根据当前案件内容灵活调整，不要逐字照抄',
-        '4. 不要凭空添加未提及的承诺、时间点或信息',
-        '5. 如果画像中有固定的开头/结尾用语，请沿用'
+        '写作要求：严格遵循此风格画像，不编造信息，不添加未提及的承诺。'
       ].join('\n')
     }
 
@@ -1027,7 +1331,6 @@
     }
 
     async function importWebLLM() {
-      // 锁定已知可用的版本，避免 CDN 加载不兼容的最新版
       const urls = [
         'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.73/+esm',
         'https://esm.run/@mlc-ai/web-llm@0.2.73',
@@ -1062,7 +1365,6 @@
           setOfflineStatus('离线模型：加载运行库...')
           const webllm = await importWebLLM()
 
-          // 兼容新旧 API：CreateMLCEngine（v0.2+）或 CreateEngine（旧版）
           const createEngine = webllm.CreateMLCEngine || webllm.CreateEngine
           if (!createEngine) {
             throw new Error('加载的 web-llm 库不包含引擎创建函数，请刷新页面重试或更换网络')
@@ -1070,7 +1372,6 @@
 
           setOfflineStatus('离线模型：下载模型文件（0%）...')
 
-          // HuggingFace 镜像：国内网络无法访问 huggingface.co，需通过 fetch 拦截重定向到镜像
           const cfg = getAiConfig()
           const hfMirror = cfg.hfMirror
           let patchedFetch = null
@@ -1099,7 +1400,6 @@
             setOfflineStatus('离线模型：已就绪')
             return engine
           } finally {
-            // 恢复原始 fetch
             if (patchedFetch) {
               globalThis.fetch = patchedFetch
             }
@@ -1118,7 +1418,6 @@
           if (/model/i.test(msg) && (/not found/i.test(msg) || /unsupported/i.test(msg))) {
             throw new Error(`离线模型 "${modelId}" 不可用：${msg}。请在AI配置中选择其他模型后重试。`)
           }
-          // 网络下载失败的通用提示
           if (/failed to fetch/i.test(msg) || /networkerror/i.test(msg) || /load failed/i.test(msg)) {
             const mirrorHint = hfMirror
               ? `已使用镜像 ${hfMirror}，但仍下载失败。请检查镜像是否可用，或尝试切换镜像/直连。`
@@ -1237,10 +1536,10 @@
     }
 
     async function callOpenAICompatDirect(messages, cfg) {
-      if (!cfg.apiKey) throw new Error('在线直连需要 API Key，请先在“AI配置”中填写并保存')
+      if (!cfg.apiKey) throw new Error('在线直连需要 API Key，请先在"AI配置"中填写并保存')
       const baseUrl = normalizeBaseUrl(cfg.baseUrl)
-      if (!baseUrl) throw new Error('请先在“AI配置”中填写 Base URL 并保存')
-      if (!cfg.model) throw new Error('请先在“AI配置”中填写模型并保存')
+      if (!baseUrl) throw new Error('请先在"AI配置"中填写 Base URL 并保存')
+      if (!cfg.model) throw new Error('请先在"AI配置"中填写模型并保存')
 
       const timeoutMs = 60000
       const controller = new AbortController()
@@ -1433,6 +1732,7 @@
           id: c?.id || Date.now() + Math.floor(Math.random() * 1000),
           createdAt: Number.isFinite(ms) ? new Date(ms).toISOString() : nowIso(),
           archivedAt: c?.archivedAt || null,
+          closedAt: c?.closedAt || c?.archivedAt || null,
           title: String(c?.title || '').trim(),
           description: String(c?.description || '').trim(),
           solution: String(c?.solution || '').trim(),
@@ -1478,6 +1778,7 @@
         status: d?.status || 'processing',
         createdAt: createdAtIso,
         updatedAt: updatedAtIso,
+        closedAt: d?.closedAt || null,
         originalEmail: String(d?.originalEmail || '').trim(),
         checklist,
         followupCustomer: String(d?.followupCustomer || '').trim(),
@@ -1503,6 +1804,7 @@
           followupClientEn: String(edited?.followupClientEn || '').trim(),
           followupClientZh: String(edited?.followupClientZh || '').trim(),
           followupDevZh: String(edited?.followupDevZh || '').trim(),
+          archiveDescription: String(edited?.archiveDescription || '').trim(),
           solution: String(edited?.solution || '').trim(),
           remark: String(edited?.remark || '').trim(),
           rootCause: String(edited?.rootCause || '').trim()
@@ -1558,23 +1860,64 @@
     }
 
     function renderDraftTabs() {
-      const el = document.getElementById('draft-tabs')
+      renderCaseList()
+    }
+
+    function renderCaseList() {
+      const el = document.getElementById('case-list')
       if (!el) return
       el.textContent = ''
-      drafts.slice(0, 20).forEach(d => {
-        const btn = document.createElement('button')
-        btn.type = 'button'
-        btn.className = 'draft-tab' + (d.id === activeDraftId ? ' active' : '')
-        const label = d.title || '未命名案件'
+
+      const searchQuery = (document.getElementById('case-search')?.value || '').trim().toLowerCase()
+      const statusFilter = document.getElementById('case-filter-status')?.value || 'all'
+
+      let filtered = drafts.slice(0, 50)
+      if (searchQuery) {
+        filtered = filtered.filter(d => {
+          const hay = [d.title, d.ai.summaryCategory, d.originalEmail].join(' ').toLowerCase()
+          return hay.includes(searchQuery)
+        })
+      }
+      if (statusFilter && statusFilter !== 'all') {
+        filtered = filtered.filter(d => d.status === statusFilter)
+      }
+
+      filtered.forEach(d => {
+        const item = document.createElement('div')
+        item.className = 'case-list-item' + (d.id === activeDraftId ? ' active' : '')
+
+        const titleDiv = document.createElement('div')
+        titleDiv.className = 'case-item-title'
         const statusIcon = CASE_STATUS[d.status] ? CASE_STATUS[d.status].charAt(0) : ''
-        btn.textContent = (statusIcon ? statusIcon + ' ' : '') + (label.length > 22 ? label.slice(0, 22) + '…' : label)
-        btn.addEventListener('click', () => setActiveDraft(d.id))
-        el.appendChild(btn)
+        const label = d.title || '未命名案件'
+        titleDiv.textContent = (statusIcon ? statusIcon + ' ' : '') + (label.length > 18 ? label.slice(0, 18) + '…' : label)
+        titleDiv.title = label
+        item.appendChild(titleDiv)
+
+        const metaDiv = document.createElement('div')
+        metaDiv.className = 'case-item-meta'
+        const metaParts = []
+        if (d.ai.summaryCategory) metaParts.push(d.ai.summaryCategory)
+        if (d.ai.summaryPriority) metaParts.push(d.ai.summaryPriority)
+        if (metaParts.length) {
+          metaDiv.textContent = metaParts.join(' · ')
+        }
+        item.appendChild(metaDiv)
+
+        const timeDiv = document.createElement('div')
+        timeDiv.className = 'case-item-meta'
+        timeDiv.textContent = formatTime(d.updatedAt)
+        item.appendChild(timeDiv)
+
+        item.addEventListener('click', () => setActiveDraft(d.id))
+        el.appendChild(item)
       })
-      if (!drafts.length) {
-        const span = document.createElement('span')
+      if (!filtered.length) {
+        const span = document.createElement('div')
         span.className = 'muted'
-        span.textContent = '暂无进行中案件'
+        span.style.textAlign = 'center'
+        span.style.padding = '20px 0'
+        span.textContent = drafts.length ? '无匹配案件' : '暂无进行中案件'
         el.appendChild(span)
       }
     }
@@ -1592,9 +1935,6 @@
 
     function applyDraftToUI(draft) {
       document.getElementById('case-status').value = draft.status || 'processing'
-      document.getElementById('case-category').value = draft.ai.summaryCategory || ''
-      document.getElementById('case-priority').value = draft.ai.summaryPriority || ''
-      document.getElementById('case-request').value = draft.ai.summaryCustomerRequest || ''
       document.getElementById('case-input').value = draft.originalEmail || ''
       renderChecklist(draft.checklist || [])
 
@@ -1613,6 +1953,7 @@
       const hasFollowup = !!(draft.edited.followupClientEn || draft.ai.followupClientEn || draft.followupCustomer)
       document.getElementById('followup-output').style.display = hasFollowup ? 'block' : 'none'
 
+      document.getElementById('archive-description').value = draft.edited.archiveDescription || draft.ai.summaryCustomerRequest || ''
       document.getElementById('solution-input').value = draft.edited.solution || draft.ai.summarySolution || ''
       document.getElementById('remark-input').value = draft.edited.remark || draft.ai.summaryRemark || ''
       document.getElementById('root-cause-input').value = draft.edited.rootCause || draft.ai.summaryRootCause || ''
@@ -1622,7 +1963,50 @@
         draft.ai.devMsgZh ||
         draft.ai.clientMsgEn ||
         draft.ai.clientMsgZh
-      document.getElementById('case-result').style.display = hasAnyResult ? 'block' : 'none'
+      const analysisResultEl = document.getElementById('analysis-result')
+      if (analysisResultEl) analysisResultEl.style.display = hasAnyResult ? 'block' : 'none'
+
+      updateRightPanel(draft)
+    }
+
+    function updateRightPanel(draft) {
+      if (!draft) return
+      document.getElementById('info-case-id').textContent = draft.id.slice(0, 8)
+      document.getElementById('info-category').textContent = draft.ai.summaryCategory || '-'
+      document.getElementById('info-priority').textContent = draft.ai.summaryPriority || '-'
+      document.getElementById('info-request').textContent = draft.ai.summaryCustomerRequest || '-'
+      document.getElementById('info-created').textContent = formatTime(draft.createdAt)
+      document.getElementById('info-updated').textContent = formatTime(draft.updatedAt)
+      document.getElementById('info-closed-at').textContent = draft.closedAt ? formatTime(draft.closedAt) : '-'
+
+      const timelineEl = document.getElementById('info-timeline')
+      timelineEl.textContent = ''
+      const timeline = draft.timeline || []
+      if (!timeline.length) {
+        timelineEl.textContent = '-'
+      } else {
+        const typeLabels = {
+          customer_email: '收到客户邮件',
+          first_analysis: 'AI分析完成',
+          dev_consult: '开发咨询生成',
+          customer_reply: '客户回复生成',
+          followup: '后续回复生成',
+          case_summarize: '结案报告生成',
+          case_closed: '归档完成',
+          // 兼容旧数据
+          customer_followup: '客户补充',
+          ai_summarize: 'AI结案总结'
+        }
+        // 倒序展示（最新的在上面）
+        timeline.slice().reverse().forEach(e => {
+          const item = document.createElement('div')
+          item.className = 'info-timeline-item'
+          const t = e.time ? new Date(Date.parse(e.time)).toLocaleTimeString() : ''
+          const label = typeLabels[e.type] || typeLabels[e.action] || e.type || e.action || ''
+          item.innerHTML = '<div class="timeline-time">' + t + '</div><div class="timeline-label">' + label + '</div>'
+          timelineEl.appendChild(item)
+        })
+      }
     }
 
     function readUIIntoDraft(draft) {
@@ -1635,6 +2019,7 @@
       draft.edited.followupClientEn = String(document.getElementById('followup-client-en').value || '').trim()
       draft.edited.followupClientZh = String(document.getElementById('followup-client-zh').value || '').trim()
       draft.edited.followupDevZh = String(document.getElementById('followup-dev-zh').value || '').trim()
+      draft.edited.archiveDescription = String(document.getElementById('archive-description')?.value || '').trim()
       draft.edited.solution = String(document.getElementById('solution-input').value || '').trim()
       draft.edited.remark = String(document.getElementById('remark-input').value || '').trim()
       draft.edited.rootCause = String(document.getElementById('root-cause-input').value || '').trim()
@@ -1663,6 +2048,7 @@
         readUIIntoDraft(draft)
         saveDrafts(drafts)
         renderDraftTabs()
+        updateRightPanel(draft)
       }, 250)
     }
 
@@ -1679,6 +2065,16 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
         tab.classList.add('active')
         document.getElementById(tab.dataset.tab).classList.add('active')
+      })
+    })
+
+    // 工作区Tab切换
+    document.querySelectorAll('.workspace-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.workspace-tab').forEach(t => t.classList.remove('active'))
+        document.querySelectorAll('.ws-tab-content').forEach(c => c.classList.remove('active'))
+        tab.classList.add('active')
+        document.getElementById(tab.dataset.wsTab).classList.add('active')
       })
     })
 
@@ -1724,14 +2120,17 @@
       const prompt = [
         '请根据用户需求生成两封邮件：中文邮件 + 英文邮件。',
         '两封邮件内容一致但符合各自语言习惯；语气礼貌专业；可以直接复制发送。',
+        LENGTH_CONSTRAINT,
         '输出严格使用 JSON：',
         '{ "zh": "...", "en": "..." }',
         `用户需求：${requirement}`
       ].join('\n')
       const raw = await callAI(prompt, buildToneOptionsForGeneration())
-      const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
-      const zh = String(parsed?.zh || '').trim()
-      const en = String(parsed?.en || '').trim()
+      const parsed = parseAIOutput(raw, ['zh', 'en'])
+      // parseAIOutput doesn't have zh/en in sectionMap, fallback to direct JSON
+      const json = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+      const zh = String(json?.zh || parsed.zh || '').trim()
+      const en = String(json?.en || parsed.en || '').trim()
       if (!zh || !en) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
       return { zh, en }
     }
@@ -1763,57 +2162,85 @@
       setGlobalError('')
       const draft = getActiveDraft()
       if (!draft) { toast('请先创建案件'); return }
-      // 先保存当前UI到draft
       readUIIntoDraft(draft)
       const caseContent = draft.originalEmail
       if (!caseContent) { toast('请粘贴客户的案件内容'); return }
 
       const btn = document.getElementById('process-case')
       setBusy(btn, 'AI正在处理...', true)
-
       try {
         const prompt = [
           '你将收到一段客户英文案件内容。',
           '请输出严格 JSON，结构如下：',
           '{',
-          '  "summary": { "category": "", "priority": "", "customerRequest": "" },',
+          '  "analysis": { "category": "", "priority": "", "customerRequest": "" },',
           '  "checklist": ["...","..."],',
-          '  "devMsgZh": "...",',
-          '  "clientMsgEn": "...",',
-          '  "clientMsgZh": "..."',
+          '  "reply": { "developerMessage": "", "customerReplyCn": "", "customerReplyEn": "" }',
           '}',
           '要求：',
-          '- summary.category 从以下选择：支付问题/登录问题/数据问题/功能异常/其他',
-          '- summary.priority 从以下选择：高/中/低',
-          '- summary.customerRequest 一句话总结客户核心诉求',
+          '- analysis.category 从以下选择：支付问题/登录问题/数据问题/功能异常/其他',
+          '- analysis.priority 从以下选择：高/中/低',
+          '- analysis.customerRequest 一句话总结客户核心诉求',
           '- checklist 是通俗自查步骤，不用专业术语；覆盖：问题点是否完整、附件、截止时间、是否需要开发、是否有遗漏需求。',
-          '- devMsgZh 是给开发的中文转发邮件/话术：说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
-          '- clientMsgEn 是给客户的英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
-          '- clientMsgZh 是 clientMsgEn 的中文翻译。',
+          '- reply.developerMessage 是给开发的中文转发邮件/话术：说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
+          '- reply.customerReplyEn 是给客户的英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
+          '- reply.customerReplyCn 是 reply.customerReplyEn 的中文翻译。',
+          LENGTH_CONSTRAINT,
           `客户案件内容：${caseContent}`
         ].join('\n')
 
         const raw = await callAI(prompt, buildToneOptionsForGeneration())
-        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
-        const checklist = Array.isArray(parsed?.checklist) ? parsed.checklist : []
-        const devMsgZh = String(parsed?.devMsgZh || '').trim()
-        const clientMsgEn = String(parsed?.clientMsgEn || '').trim()
-        const clientMsgZh = String(parsed?.clientMsgZh || '').trim()
-        if (!checklist.length || !devMsgZh || !clientMsgEn || !clientMsgZh) {
-          throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+        const json = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+
+        // 解析 analysis
+        const analysis = json?.analysis || {}
+        const summaryCategory = String(analysis.category || '').trim()
+        const summaryPriority = String(analysis.priority || '').trim()
+        const summaryCustomerRequest = String(analysis.customerRequest || '').trim()
+
+        // 解析 checklist
+        const checklist = Array.isArray(json?.checklist) ? json.checklist.map(x => String(x || '').trim()).filter(Boolean).slice(0, 20) : []
+
+        // 解析 reply - 使用3层解析
+        const replyRaw = json?.reply || null
+        let developerMessage = ''
+        let customerReplyCn = ''
+        let customerReplyEn = ''
+
+        if (replyRaw && typeof replyRaw === 'object') {
+          developerMessage = String(replyRaw.developerMessage || '').trim()
+          customerReplyCn = String(replyRaw.customerReplyCn || '').trim()
+          customerReplyEn = String(replyRaw.customerReplyEn || '').trim()
         }
 
-        const summary = parsed?.summary || {}
-        draft.ai.summaryCategory = String(summary.category || '').trim()
-        draft.ai.summaryPriority = String(summary.priority || '').trim()
-        draft.ai.summaryCustomerRequest = String(summary.customerRequest || '').trim()
+        // 如果reply解析不完整，用3层解析从raw中提取
+        if (!developerMessage || !customerReplyEn || !customerReplyCn) {
+          const parsed = parseAIOutput(raw, ['developerMessage', 'customerReplyCn', 'customerReplyEn'])
+          if (!developerMessage && parsed.developerMessage) developerMessage = parsed.developerMessage
+          if (!customerReplyCn && parsed.customerReplyCn) customerReplyCn = parsed.customerReplyCn
+          if (!customerReplyEn && parsed.customerReplyEn) customerReplyEn = parsed.customerReplyEn
+        }
 
-        draft.checklist = checklist.map(x => String(x || '').trim()).filter(Boolean).slice(0, 20)
-        draft.ai.devMsgZh = devMsgZh
-        draft.ai.clientMsgEn = clientMsgEn
-        draft.ai.clientMsgZh = clientMsgZh
+        // 兼容旧字段名
+        if (!developerMessage) developerMessage = String(json?.devMsgZh || '').trim()
+        if (!customerReplyEn) customerReplyEn = String(json?.clientMsgEn || '').trim()
+        if (!customerReplyCn) customerReplyCn = String(json?.clientMsgZh || '').trim()
+
+        draft.ai.summaryCategory = summaryCategory
+        draft.ai.summaryPriority = summaryPriority
+        draft.ai.summaryCustomerRequest = summaryCustomerRequest
+
+        draft.checklist = checklist
+        draft.ai.devMsgZh = developerMessage
+        draft.ai.clientMsgEn = customerReplyEn
+        draft.ai.clientMsgZh = customerReplyCn
+
+        // 记录4个timeline事件
         draft.timeline.push({ type: 'customer_email', content: caseContent, time: nowIso() })
-        draft.timeline.push({ type: 'first_analysis', result: parsed, time: nowIso() })
+        draft.timeline.push({ type: 'first_analysis', result: { category: summaryCategory, priority: summaryPriority, customerRequest: summaryCustomerRequest }, time: nowIso() })
+        draft.timeline.push({ type: 'dev_consult', result: developerMessage, time: nowIso() })
+        draft.timeline.push({ type: 'customer_reply', result: { en: customerReplyEn, zh: customerReplyCn }, time: nowIso() })
+
         draft.updatedAt = nowIso()
         saveDrafts(drafts)
         applyDraftToUI(draft)
@@ -1822,6 +2249,90 @@
         setGlobalError(err.message)
       } finally {
         setBusy(btn, 'AI正在处理...', false)
+      }
+    })
+
+    // 重新生成开发咨询
+    document.getElementById('regen-dev-msg').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      if (!draft.originalEmail) { toast('请先粘贴客户案件内容'); return }
+
+      const btn = document.getElementById('regen-dev-msg')
+      setBusy(btn, '重新生成...', true)
+      try {
+        const prompt = [
+          '你将收到一段客户案件内容，请生成给开发的中文转发邮件/话术。',
+          '说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
+          LENGTH_CONSTRAINT,
+          '开发咨询50~120字。',
+          '输出严格 JSON：',
+          '{ "developerMessage": "" }',
+          `客户案件内容：${draft.originalEmail}`,
+          `案件摘要：分类=${draft.ai.summaryCategory || ''}，优先级=${draft.ai.summaryPriority || ''}，客户诉求=${draft.ai.summaryCustomerRequest || ''}`
+        ].join('\n')
+
+        const raw = await callAI(prompt, buildToneOptionsForGeneration())
+        const parsed = parseAIOutput(raw, ['developerMessage'])
+        const developerMessage = parsed.developerMessage || ''
+        if (!developerMessage) throw new Error('AI输出解析失败，请稍后重试')
+
+        draft.ai.devMsgZh = developerMessage
+        draft.edited.devMsgZh = ''
+        draft.timeline.push({ type: 'dev_consult', result: developerMessage, time: nowIso() })
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+        applyDraftToUI(draft)
+        toast('开发咨询已重新生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '重新生成...', false)
+      }
+    })
+
+    // 重新生成客户回复
+    document.getElementById('regen-customer-reply').addEventListener('click', async () => {
+      setGlobalError('')
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      if (!draft.originalEmail) { toast('请先粘贴客户案件内容'); return }
+
+      const btn = document.getElementById('regen-customer-reply')
+      setBusy(btn, '重新生成...', true)
+      try {
+        const prompt = [
+          '你将收到一段客户案件内容，请生成给客户的英文回复和中文翻译。',
+          '英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
+          LENGTH_CONSTRAINT,
+          '输出严格 JSON：',
+          '{ "customerReplyEn": "", "customerReplyCn": "" }',
+          `客户案件内容：${draft.originalEmail}`,
+          `案件摘要：分类=${draft.ai.summaryCategory || ''}，优先级=${draft.ai.summaryPriority || ''}，客户诉求=${draft.ai.summaryCustomerRequest || ''}`
+        ].join('\n')
+
+        const raw = await callAI(prompt, buildToneOptionsForGeneration())
+        const parsed = parseAIOutput(raw, ['customerReplyEn', 'customerReplyCn'])
+        const customerReplyEn = parsed.customerReplyEn || ''
+        const customerReplyCn = parsed.customerReplyCn || ''
+        if (!customerReplyEn && !customerReplyCn) throw new Error('AI输出解析失败，请稍后重试')
+
+        draft.ai.clientMsgEn = customerReplyEn
+        draft.ai.clientMsgZh = customerReplyCn
+        draft.edited.clientMsgEn = ''
+        draft.edited.clientMsgZh = ''
+        draft.timeline.push({ type: 'customer_reply', result: { en: customerReplyEn, zh: customerReplyCn }, time: nowIso() })
+        draft.updatedAt = nowIso()
+        saveDrafts(drafts)
+        applyDraftToUI(draft)
+        toast('客户回复已重新生成')
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '重新生成...', false)
       }
     })
 
@@ -1837,31 +2348,49 @@
       const btn = document.getElementById('generate-followup')
       setBusy(btn, '正在生成...', true)
       try {
+        const caseSummary = [
+          draft.ai.summaryCategory ? `分类：${draft.ai.summaryCategory}` : '',
+          draft.ai.summaryPriority ? `优先级：${draft.ai.summaryPriority}` : '',
+          draft.ai.summaryCustomerRequest ? `客户诉求：${draft.ai.summaryCustomerRequest}` : '',
+          draft.ai.clientMsgEn ? `上次回复摘要：${draft.ai.clientMsgEn.slice(0, 300)}` : ''
+        ].filter(Boolean).join('；')
+
         const prompt = [
-          '你将收到：初始案件内容 + 客户后续回复。',
-          '请基于上下文生成对应的：给客户英文回复（含中文翻译）以及给开发的中文沟通话术。',
+          '你将收到：案件摘要 + 客户后续回复。',
+          '请基于上下文生成：给开发中文沟通话术 + 给客户英文回复（含中文翻译）。',
+          LENGTH_CONSTRAINT,
           '输出严格 JSON：',
-          '{ "clientMsgEn": "...", "clientMsgZh": "...", "devMsgZh": "...", "nextAction": "..." }',
+          '{ "developerMessage": "", "customerReplyCn": "", "customerReplyEn": "", "nextAction": "" }',
           '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；语气礼貌专业。',
           '- nextAction 说明下一步行动，如：等待客户提供截图、等待开发确认日志、可直接关闭等。',
-          `初始案件内容：${draft.originalEmail}`,
+          `案件摘要：${caseSummary || draft.originalEmail.slice(0, 500)}`,
           `客户后续回复：${followup}`
         ].join('\n')
 
         const raw = await callAI(prompt, buildToneOptionsForGeneration())
-        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
-        const clientMsgEn = String(parsed?.clientMsgEn || '').trim()
-        const clientMsgZh = String(parsed?.clientMsgZh || '').trim()
-        const devMsgZh = String(parsed?.devMsgZh || '').trim()
-        if (!clientMsgEn || !clientMsgZh || !devMsgZh) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+        const parsed = parseAIOutput(raw, ['developerMessage', 'customerReplyCn', 'customerReplyEn'])
 
-        const nextAction = String(parsed?.nextAction || '').trim()
+        let clientMsgEn = parsed.customerReplyEn || ''
+        let clientMsgZh = parsed.customerReplyCn || ''
+        let devMsgZh = parsed.developerMessage || ''
+        let nextAction = ''
+
+        // 尝试从JSON中获取nextAction
+        const json = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+        if (json) nextAction = String(json.nextAction || '').trim()
+
+        // 兼容旧字段名
+        if (!clientMsgEn) clientMsgEn = String(json?.clientMsgEn || '').trim()
+        if (!clientMsgZh) clientMsgZh = String(json?.clientMsgZh || '').trim()
+        if (!devMsgZh) devMsgZh = String(json?.devMsgZh || '').trim()
+
+        if (!clientMsgEn && !clientMsgZh && !devMsgZh) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
         draft.ai.followupNextAction = nextAction
 
         draft.ai.followupClientEn = clientMsgEn
         draft.ai.followupClientZh = clientMsgZh
         draft.ai.followupDevZh = devMsgZh
-        draft.timeline.push({ type: 'customer_followup', content: followup, time: nowIso() })
+        draft.timeline.push({ type: 'followup', content: followup, time: nowIso() })
         draft.updatedAt = nowIso()
         saveDrafts(drafts)
         applyDraftToUI(draft)
@@ -1885,9 +2414,9 @@
         const prompt = [
           '请根据以下案件完整处理过程，自动生成结案总结。',
           '输出严格 JSON：',
-          '{ "description": "...", "solution": "...", "rootCause": "...", "remark": "..." }',
+          '{ "caseDescription": "", "solution": "", "rootCause": "", "remark": "" }',
           '要求：',
-          '- description 简要描述案件问题',
+          '- caseDescription 简要描述案件问题',
           '- solution 说明最终怎么解决',
           '- rootCause 给出根因（如不确定写"待确认"）',
           '- remark 写补充信息/影响范围/后续行动',
@@ -1900,19 +2429,23 @@
           `后续给开发话术：${draft.edited.followupDevZh || draft.ai.followupDevZh || ''}`
         ].join('\n')
         const raw = await callAI(prompt, buildToneOptionsForGeneration())
-        const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
-        const description = String(parsed?.description || '').trim()
-        const solution = String(parsed?.solution || '').trim()
-        const rootCause = String(parsed?.rootCause || '').trim()
-        const remark = String(parsed?.remark || '').trim()
-        if (!solution) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
-        if (description && !draft.ai.summaryCustomerRequest) {
-          draft.ai.summaryCustomerRequest = description
+        const parsed = parseAIOutput(raw, ['caseDescription', 'solution', 'remark', 'rootCause'])
+
+        // 兼容旧字段名
+        const json = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
+        let caseDescription = parsed.caseDescription || String(json?.description || '').trim()
+        let solution = parsed.solution || ''
+        let rootCause = parsed.rootCause || ''
+        let remark = parsed.remark || ''
+
+        if (!solution && !caseDescription) throw new Error('AI输出解析失败，请稍后重试或调整提示词')
+        if (caseDescription && !draft.ai.summaryCustomerRequest) {
+          draft.ai.summaryCustomerRequest = caseDescription
         }
         draft.ai.summarySolution = solution
         draft.ai.summaryRootCause = rootCause
         draft.ai.summaryRemark = remark
-        draft.timeline.push({ type: 'ai_summarize', result: { solution, rootCause, remark }, time: nowIso() })
+        draft.timeline.push({ type: 'case_summarize', result: { caseDescription, solution, rootCause, remark }, time: nowIso() })
         draft.updatedAt = nowIso()
         saveDrafts(drafts)
         applyDraftToUI(draft)
@@ -1924,7 +2457,7 @@
       }
     })
 
-    // 完成案件（一键归档：自动 AI 生成结案总结 + 带入归档内容 + 保存）
+    // 完成案件（一键归档）
     document.getElementById('finish-case').addEventListener('click', async () => {
       setGlobalError('')
       const draft = getActiveDraft()
@@ -1938,13 +2471,12 @@
       try {
         // 如果解决方案为空，自动 AI 生成结案总结 + 带入归档内容
         if (!draft.edited.solution) {
-          // 先 AI 生成结案总结
           if (draft.ai.clientMsgEn && !draft.ai.summarySolution) {
             try {
               const prompt = [
                 '请根据以下案件信息生成结构化结案总结。',
                 '输出严格 JSON：',
-                '{ "solution": "...", "rootCause": "...", "remark": "..." }',
+                '{ "solution": "", "rootCause": "", "remark": "" }',
                 '要求：solution 说明最终怎么解决；rootCause 给出根因；remark 写补充信息。',
                 `案件描述：${draft.originalEmail}`,
                 `自查步骤：${(draft.checklist || []).join('；')}`,
@@ -1953,11 +2485,11 @@
                 `客户后续：${draft.followupCustomer || ''}`
               ].join('\n')
               const raw = await callAI(prompt, buildToneOptionsForGeneration())
-              const parsed = extractFirstJsonObject(raw) || safeJsonParse(raw, null)
-              draft.ai.summarySolution = String(parsed?.solution || '').trim()
-              draft.ai.summaryRootCause = String(parsed?.rootCause || '').trim()
-              draft.ai.summaryRemark = String(parsed?.remark || '').trim()
-              draft.timeline.push({ type: 'ai_summarize', result: { solution: draft.ai.summarySolution, rootCause: draft.ai.summaryRootCause, remark: draft.ai.summaryRemark }, time: nowIso() })
+              const parsed = parseAIOutput(raw, ['solution', 'rootCause', 'remark'])
+              draft.ai.summarySolution = parsed.solution || ''
+              draft.ai.summaryRootCause = parsed.rootCause || ''
+              draft.ai.summaryRemark = parsed.remark || ''
+              draft.timeline.push({ type: 'case_summarize', result: { solution: draft.ai.summarySolution, rootCause: draft.ai.summaryRootCause, remark: draft.ai.summaryRemark }, time: nowIso() })
             } catch (err) {
               // AI 生成失败不阻断归档
             }
@@ -1983,10 +2515,11 @@
           document.getElementById('root-cause-input').value = draft.edited.rootCause
         }
 
+        draft.closedAt = nowIso()
         draft.updatedAt = nowIso()
         saveDrafts(drafts)
 
-        const description = draft.originalEmail || ''
+        const description = draft.edited.archiveDescription || draft.originalEmail || ''
         const title = description.length > 200 ? description.slice(0, 200) + '...' : description
 
         draft.timeline.push({ type: 'case_closed', result: { solution: draft.edited.solution, remark: draft.edited.remark, rootCause: draft.edited.rootCause }, time: nowIso() })
@@ -1995,6 +2528,7 @@
           id: draft.id,
           createdAt: draft.createdAt,
           archivedAt: nowIso(),
+          closedAt: draft.closedAt,
           status: 'closed',
           category: draft.ai.summaryCategory || '',
           priority: draft.ai.summaryPriority || '',
@@ -2043,41 +2577,48 @@
       const draft = getActiveDraft()
       if (!draft) { toast('请先创建案件'); return }
       readUIIntoDraft(draft)
-      // 综合所有最终回复带入解决方案
-      const parts = []
-      const clientReply = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
-      const devMsg = draft.edited.devMsgZh || draft.ai.devMsgZh || ''
-      const followupReply = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
-      const followupDev = draft.edited.followupDevZh || draft.ai.followupDevZh || ''
-      if (clientReply) parts.push('【给客户英文回复】\n' + clientReply)
-      if (followupReply) parts.push('【后续给客户英文回复】\n' + followupReply)
-      if (devMsg) parts.push('【给开发沟通话术】\n' + devMsg)
-      if (followupDev) parts.push('【后续给开发话术】\n' + followupDev)
-      if (!parts.length) {
-        toast('暂无可带入的内容，请先处理案件')
-        return
+
+      // 带入案件描述
+      if (!draft.edited.archiveDescription) {
+        document.getElementById('archive-description').value = draft.ai.summaryCustomerRequest || draft.originalEmail.slice(0, 300) || ''
       }
-      document.getElementById('solution-input').value = parts.join('\n\n')
+
+      // 带入解决方案（综合所有回复）
+      if (!draft.edited.solution) {
+        const parts = []
+        const clientReply = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+        const devMsg = draft.edited.devMsgZh || draft.ai.devMsgZh || ''
+        const followupReply = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
+        const followupDev = draft.edited.followupDevZh || draft.ai.followupDevZh || ''
+        if (clientReply) parts.push('【给客户英文回复】\n' + clientReply)
+        if (followupReply) parts.push('【后续给客户英文回复】\n' + followupReply)
+        if (devMsg) parts.push('【给开发沟通话术】\n' + devMsg)
+        if (followupDev) parts.push('【后续给开发话术】\n' + followupDev)
+        if (draft.ai.summarySolution) parts.unshift('【AI结案总结】\n' + draft.ai.summarySolution)
+        document.getElementById('solution-input').value = parts.join('\n\n') || ''
+      }
+
       // 带入AI生成的备注和根因
-      if (draft.ai.summaryRemark && !draft.edited.remark) {
+      if (!draft.edited.remark && draft.ai.summaryRemark) {
         document.getElementById('remark-input').value = draft.ai.summaryRemark
       }
-      if (draft.ai.summaryRootCause && !draft.edited.rootCause) {
+      if (!draft.edited.rootCause && draft.ai.summaryRootCause) {
         document.getElementById('root-cause-input').value = draft.ai.summaryRootCause
       }
+
       scheduleSaveActiveDraft()
-      toast('已带入归档内容')
+      toast('已带入归档内容，请检查修改后点击"归档到历史记录"')
     })
 
     // 新建/关闭/重命名 draft 按钮
     document.getElementById('new-draft').addEventListener('click', () => {
       createDraft()
-      // 切换到案件处理tab
+      // 切换到案件中心tab
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
-      const caseTab = document.querySelector('.tab[data-tab="case-handle"]')
+      const caseTab = document.querySelector('.tab[data-tab="case-center"]')
       if (caseTab) caseTab.classList.add('active')
-      const caseContent = document.getElementById('case-handle')
+      const caseContent = document.getElementById('case-center')
       if (caseContent) caseContent.classList.add('active')
       toast('已新建案件')
     })
@@ -2108,6 +2649,12 @@
       draft.updatedAt = nowIso()
       saveDrafts(drafts)
       renderDraftTabs()
+    })
+
+    // 重新学习风格按钮
+    document.getElementById('reset-style-profile').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEYS.styleProfile)
+      toast('风格画像已清除，下次生成时将重新学习')
     })
 
     // 模板管理
@@ -2427,7 +2974,6 @@
         document.getElementById('case-view-original').value = process.originalEmail || ''
         document.getElementById('case-view-checklist').value = (process.checklist || []).join('\n')
 
-        // 兼容新旧结构：新版存 ai+edited，旧版存扁平字段
         const ai = process.ai || {}
         const edited = process.edited || {}
         const devMsgFinal = edited.devMsgZh || ai.devMsgZh || process.devMsgZh || ''
@@ -2456,9 +3002,8 @@
           followupSection.style.display = 'none'
         }
 
-        // AI中间结果：展示AI原始结果与用户修改版的对比
+        // AI中间结果
         const aiLogParts = []
-        // AI原始结果
         if (ai.devMsgZh && ai.devMsgZh !== devMsgFinal) {
           aiLogParts.push('=== AI原始：给开发话术 ===\n' + ai.devMsgZh)
         }
@@ -2477,7 +3022,6 @@
         if (ai.summaryRemark) {
           aiLogParts.push('=== AI结案总结：备注 ===\n' + ai.summaryRemark)
         }
-        // AI调用日志
         if (process.aiLogs && process.aiLogs.length) {
           aiLogParts.push('=== AI调用日志 ===\n' + JSON.stringify(process.aiLogs, null, 2))
         }
@@ -2490,16 +3034,21 @@
       const timeline = process?.timeline || item.timeline || []
       if (timeline.length) {
         timelineSection.style.display = 'block'
-        const lines = timeline.map(e => {
+        const typeLabels = {
+          customer_email: '收到客户邮件',
+          first_analysis: 'AI分析完成',
+          dev_consult: '开发咨询生成',
+          customer_reply: '客户回复生成',
+          followup: '后续回复生成',
+          case_summarize: '结案报告生成',
+          case_closed: '归档完成',
+          // 兼容旧数据
+          customer_followup: '客户补充',
+          ai_summarize: 'AI结案总结'
+        }
+        const lines = timeline.slice().reverse().map(e => {
           const t = e.time ? new Date(Date.parse(e.time)).toLocaleTimeString() : ''
-          const typeLabels = {
-            customer_email: '客户来信',
-            first_analysis: 'AI分析',
-            customer_followup: '客户补充',
-            ai_summarize: 'AI结案总结',
-            case_closed: '结案'
-          }
-          const label = typeLabels[e.type] || e.type || e.action || ''
+          const label = typeLabels[e.type] || typeLabels[e.action] || e.type || e.action || ''
           let detail = ''
           if (e.content) detail = e.content.slice(0, 100)
           else if (e.result) detail = JSON.stringify(e.result).slice(0, 200)
@@ -2536,6 +3085,13 @@
     })
     document.getElementById('from-date').addEventListener('change', renderHistory)
     document.getElementById('to-date').addEventListener('change', renderHistory)
+
+    // 左侧案件搜索和筛选
+    document.getElementById('case-search').addEventListener('input', () => {
+      clearTimeout(searchTimer)
+      searchTimer = setTimeout(renderCaseList, 180)
+    })
+    document.getElementById('case-filter-status').addEventListener('change', renderCaseList)
 
     document.getElementById('export-csv').addEventListener('click', () => {
       setGlobalError('')
@@ -2655,10 +3211,8 @@
       const cfg = getAiConfig()
       const start = Date.now()
 
-      // 依次测试各提供商，显示详细结果
       const results = []
 
-      // 测试 Cloudflare Workers AI
       if (cfg.mode !== 'offline') {
         try {
           const t0 = Date.now()
@@ -2680,7 +3234,6 @@
         }
       }
 
-      // 测试 OpenRouter
       if (cfg.openrouterKey && cfg.mode !== 'offline') {
         try {
           const t0 = Date.now()
@@ -2696,7 +3249,6 @@
         }
       }
 
-      // 测试离线
       if (offlineState.engine) {
         try {
           const t0 = Date.now()
@@ -2711,7 +3263,6 @@
         }
       }
 
-      // 测试 OpenAI 兼容
       if (cfg.baseUrl && cfg.model && cfg.apiKey && cfg.mode !== 'offline') {
         try {
           const t0 = Date.now()
@@ -2726,7 +3277,6 @@
         }
       }
 
-      // 显示结果
       if (!results.length) {
         setGlobalError('无可测试的AI提供商。请先配置至少一个AI。')
       } else {
@@ -2759,7 +3309,7 @@
     }
 
     // textarea 自动保存
-    const autoSaveIds = ['case-status', 'case-category', 'case-priority', 'case-request', 'case-input', 'dev-msg', 'client-msg-en', 'client-msg-zh', 'customer-followup', 'followup-client-en', 'followup-client-zh', 'followup-dev-zh', 'solution-input', 'remark-input', 'root-cause-input']
+    const autoSaveIds = ['case-status', 'case-input', 'dev-msg', 'client-msg-en', 'client-msg-zh', 'customer-followup', 'followup-client-en', 'followup-client-zh', 'followup-dev-zh', 'archive-description', 'solution-input', 'remark-input', 'root-cause-input']
     autoSaveIds.forEach(id => {
       const el = document.getElementById(id)
       if (el) {
