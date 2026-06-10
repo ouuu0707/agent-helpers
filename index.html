@@ -256,6 +256,17 @@
       border-radius: 10px;
       border: 1px solid #eee;
     }
+    .reply-status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .reply-status-badge.status-ai { background: #e3f2fd; color: #1565c0; }
+    .reply-status-badge.status-draft { background: #fff3e0; color: #e65100; }
+    .reply-status-badge.status-saved { background: #e8f5e9; color: #2e7d32; }
+    .reply-status-badge.status-confirmed { background: #07c160; color: white; }
     .toast {
       position: fixed;
       left: 50%;
@@ -577,16 +588,30 @@
           <!-- Tab3: 客户回复 -->
           <div class="ws-tab-content" id="ws-customer-reply">
             <div class="section">
-              <div class="section-title">给客户的英文回复（可编辑）</div>
-              <textarea id="client-msg-en" placeholder="AI处理案件后生成，或手动填写"></textarea>
-              <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
-
-              <div class="section-title" style="margin-top: 16px;">中文翻译（可编辑）</div>
-              <textarea id="client-msg-zh" placeholder="AI处理案件后生成，或手动填写"></textarea>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
-                <button id="regen-customer-reply" class="btn btn-primary" style="font-size:14px;">重新生成</button>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <div class="section-title" style="margin-bottom:0;">客户回复</div>
+                <span id="reply-status-badge" class="reply-status-badge">AI生成</span>
               </div>
+              <div class="section-title">英文回复（可编辑）</div>
+              <textarea id="client-msg-en" placeholder="AI处理案件后生成，或手动填写"></textarea>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
+                <button id="regen-customer-reply" class="btn btn-primary" style="font-size:14px;">重新生成</button>
+                <button id="sync-en-from-zh" class="btn btn-secondary" style="font-size:14px;" title="根据当前中文草稿重新生成英文">中文→英文</button>
+              </div>
+
+              <div class="section-title" style="margin-top: 16px;">中文回复（可编辑）</div>
+              <textarea id="client-msg-zh" placeholder="AI处理案件后生成，或手动填写"></textarea>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
+                <button id="sync-zh-from-en" class="btn btn-secondary" style="font-size:14px;" title="根据当前英文草稿重新生成中文">英文→中文</button>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                <button id="save-reply-draft" class="btn btn-secondary">保存草稿</button>
+                <button id="confirm-final-reply" class="btn btn-primary">确认最终回复</button>
+              </div>
+              <div class="help" style="margin-top:8px;">保存草稿：仅保存编辑内容。确认最终回复：锁定版本，归档时保存此版本。</div>
             </div>
           </div>
 
@@ -602,11 +627,13 @@
                     <div class="section-title">后续：给客户英文回复（可编辑）</div>
                     <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
                     <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
+                    <button id="sync-followup-en-from-zh" class="btn btn-secondary" style="font-size:14px;" title="根据当前中文草稿重新生成英文">中文→英文</button>
                   </div>
                   <div>
                     <div class="section-title">后续：中文翻译（可编辑）</div>
                     <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
                     <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
+                    <button id="sync-followup-zh-from-en" class="btn btn-secondary" style="font-size:14px;" title="根据当前英文草稿重新生成中文">英文→中文</button>
                   </div>
                 </div>
                 <div style="margin-top:12px;">
@@ -743,10 +770,10 @@
           <table class="history-table">
             <thead>
               <tr>
-                <th style="width:80px;">状态</th>
-                <th style="width:90px;">分类</th>
-                <th style="width:60px;">优先级</th>
-                <th style="width:140px;">时间</th>
+                <th style="width:100px;">状态</th>
+                <th style="width:120px;">分类</th>
+                <th style="width:120px;">优先级</th>
+                <th style="width:160px;">更新时间</th>
                 <th>案件描述</th>
                 <th>解决方案</th>
                 <th>根本原因</th>
@@ -765,38 +792,34 @@
       <details class="settings-panel" open>
         <summary>快捷邮件生成器</summary>
         <div class="panel-body">
-          <div class="card-title">输入需求，一键生成中英文邮件</div>
-          <textarea id="reply-input" placeholder="比如：我要回复客户，告诉他我已经收到他的邮件，会尽快处理"></textarea>
-
-          <div class="row">
-            <div>
-              <div class="pill">
+          <div style="display:flex;gap:16px;">
+            <div style="flex:3;">
+              <div class="card-title">输入需求，一键生成中英文邮件</div>
+              <textarea id="reply-input" placeholder="比如：我要回复客户，告诉他我已经收到他的邮件，会尽快处理"></textarea>
+              <div class="pill" style="margin-bottom:12px;">
                 <input id="use-tone" type="checkbox" checked>
-                <label for="use-tone">使用模板语气参考</label>
+                <label for="use-tone">使用风格画像</label>
               </div>
-              <div class="help">开启后会把你选中的模板作为"语气/措辞参考"，不逐字照抄。</div>
+              <button id="generate-reply" class="btn btn-primary">生成中英文邮件</button>
+              <div id="reply-output" class="section" style="display:none; margin-top:16px;">
+                <div class="output-grid">
+                  <div>
+                    <div class="section-title">中文邮件（可编辑）</div>
+                    <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
+                  </div>
+                  <div>
+                    <div class="section-title">英文邮件（可编辑）</div>
+                    <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
+            <div style="flex:1;">
               <label>参考模板（可多选）</label>
-              <select id="tone-template-select" multiple size="4"></select>
+              <select id="tone-template-select" multiple size="8"></select>
               <div class="help">不选择时默认使用所有"用于语气学习"的模板。</div>
-            </div>
-          </div>
-
-          <button id="generate-reply" class="btn btn-primary">生成中英文邮件</button>
-
-          <div id="reply-output" class="section" style="display:none; margin-top:16px;">
-            <div class="output-grid">
-              <div>
-                <div class="section-title">中文邮件（可编辑）</div>
-                <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
-                <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
-              </div>
-              <div>
-                <div class="section-title">英文邮件（可编辑）</div>
-                <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
-                <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
-              </div>
             </div>
           </div>
         </div>
@@ -982,13 +1005,21 @@
           <textarea id="case-view-dev" style="height:140px;"></textarea>
           <button class="btn btn-secondary copy-btn" data-copy-target="case-view-dev">复制</button>
         </div>
+        <div class="section" id="case-view-ai-original-section" style="display:none;">
+          <div class="section-title">AI原稿（英文回复）</div>
+          <textarea id="case-view-ai-en" style="height:120px;" readonly></textarea>
+        </div>
+        <div class="section" id="case-view-ai-original-zh-section" style="display:none;">
+          <div class="section-title">AI原稿（中文回复）</div>
+          <textarea id="case-view-ai-zh" style="height:120px;" readonly></textarea>
+        </div>
         <div class="section">
-          <div class="section-title">给客户英文回复（最终版）</div>
+          <div class="section-title">给客户英文回复（确认版）</div>
           <textarea id="case-view-client-en" style="height:140px;"></textarea>
           <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-en">复制</button>
         </div>
         <div class="section">
-          <div class="section-title">中文翻译（最终版）</div>
+          <div class="section-title">中文翻译（确认版）</div>
           <textarea id="case-view-client-zh" style="height:140px;"></textarea>
           <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-zh">复制</button>
         </div>
@@ -1040,6 +1071,7 @@
 
     const DEFAULT_CF_MODEL = '@cf/meta/llama-3.1-8b-instruct'
     const DEFAULT_OFFLINE_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC'
+    const AI_TIMEOUT = 20000
 
     const CASE_STATUS = {
       processing: '🟡处理中',
@@ -1057,6 +1089,8 @@
     ].join('\n')
 
     const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~180词，中文翻译80~180字，开发咨询50~120字。禁止重复表达、过度客套、无意义寒暄。'
+
+    const PRIORITY_DISPLAY = { '高': '🔴 高', '中': '🟡 中', '低': '🟢 低' }
 
     function safeJsonParse(str, fallback) {
       if (typeof str !== 'string' || !str.trim()) return fallback
@@ -1503,7 +1537,7 @@
           return response
         } catch (err) {
           if (err && typeof err === 'object' && err.name === 'AbortError') {
-            throw new Error('AI响应超时（10秒）\n请重试或切换模型')
+            throw new Error('AI响应超时（20秒）\n请重试或切换模型')
           }
           throw err
         } finally {
@@ -1511,7 +1545,7 @@
         }
       }
 
-      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : 10000
+      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : AI_TIMEOUT
       let response = await doPost('/api/ai', timeoutMs)
       if (response.status === 405) {
         response = await doPost('/api/ai/', timeoutMs)
@@ -1592,7 +1626,7 @@
     async function callOpenRouter(messages, cfg) {
       if (!cfg.openrouterKey) throw new Error('OpenRouter 需要 API Key，请先在AI配置中填写')
       const model = cfg.openrouterModel || 'meta-llama/llama-3.1-8b-instruct:free'
-      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : 10000
+      const timeoutMs = Number.isFinite(Number(cfg?.timeoutMs)) ? Number(cfg.timeoutMs) : AI_TIMEOUT
       const controller = new AbortController()
       const t = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -1625,7 +1659,7 @@
         return String(content).trim()
       } catch (err) {
         if (err && typeof err === 'object' && err.name === 'AbortError') {
-          throw new Error('AI响应超时（10秒）\n请重试或切换模型')
+          throw new Error('AI响应超时（20秒）\n请重试或切换模型')
         }
         throw err
       } finally {
@@ -1809,6 +1843,13 @@
           remark: String(edited?.remark || '').trim(),
           rootCause: String(edited?.rootCause || '').trim()
         },
+        final: {
+          clientMsgEn: String((d?.final || {})?.clientMsgEn || '').trim(),
+          clientMsgZh: String((d?.final || {})?.clientMsgZh || '').trim(),
+          followupClientEn: String((d?.final || {})?.followupClientEn || '').trim(),
+          followupClientZh: String((d?.final || {})?.followupClientZh || '').trim()
+        },
+        replyStatus: String(d?.replyStatus || 'ai_generated').trim(),
         timeline
       }
     }
@@ -1967,6 +2008,21 @@
       if (analysisResultEl) analysisResultEl.style.display = hasAnyResult ? 'block' : 'none'
 
       updateRightPanel(draft)
+      updateReplyStatusBadge(draft)
+    }
+
+    function updateReplyStatusBadge(draft) {
+      const badge = document.getElementById('reply-status-badge')
+      if (!badge) return
+      const statusMap = {
+        ai_generated: { text: 'AI生成', cls: 'status-ai' },
+        draft_editing: { text: '编辑中', cls: 'status-draft' },
+        draft_saved: { text: '已保存草稿', cls: 'status-saved' },
+        confirmed: { text: '已确认', cls: 'status-confirmed' }
+      }
+      const s = statusMap[draft.replyStatus] || statusMap.ai_generated
+      badge.textContent = s.text
+      badge.className = 'reply-status-badge ' + s.cls
     }
 
     function updateRightPanel(draft) {
@@ -1993,6 +2049,7 @@
           followup: '后续回复生成',
           case_summarize: '结案报告生成',
           case_closed: '归档完成',
+          reply_confirmed: '回复已确认',
           // 兼容旧数据
           customer_followup: '客户补充',
           ai_summarize: 'AI结案总结'
@@ -2024,6 +2081,9 @@
       draft.edited.remark = String(document.getElementById('remark-input').value || '').trim()
       draft.edited.rootCause = String(document.getElementById('root-cause-input').value || '').trim()
       draft.updatedAt = nowIso()
+      if (draft.replyStatus === 'ai_generated' && (draft.edited.clientMsgEn !== draft.ai.clientMsgEn || draft.edited.clientMsgZh !== draft.ai.clientMsgZh)) {
+        draft.replyStatus = 'draft_editing'
+      }
     }
 
     let drafts = loadDrafts()
@@ -2135,6 +2195,34 @@
       return { zh, en }
     }
 
+    async function syncEnFromZh(chineseText) {
+      if (!chineseText) { toast('中文内容为空'); return '' }
+      const prompt = [
+        '请将以下中文邮件翻译为专业客服英文邮件。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
+        LENGTH_CONSTRAINT,
+        '输出严格 JSON：{ "english": "" }',
+        `中文邮件：${chineseText}`
+      ].join('\n')
+      const raw = await callAI(prompt, {})
+      const parsed = parseAIOutput(raw, ['english'])
+      return parsed.english || ''
+    }
+
+    async function syncZhFromEn(englishText) {
+      if (!englishText) { toast('英文内容为空'); return '' }
+      const prompt = [
+        '请将以下英文邮件翻译为专业客服中文邮件。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
+        LENGTH_CONSTRAINT,
+        '输出严格 JSON：{ "chinese": "" }',
+        `英文邮件：${englishText}`
+      ].join('\n')
+      const raw = await callAI(prompt, {})
+      const parsed = parseAIOutput(raw, ['chinese'])
+      return parsed.chinese || ''
+    }
+
     document.getElementById('generate-reply').addEventListener('click', async () => {
       setGlobalError('')
       const input = document.getElementById('reply-input').value.trim()
@@ -2154,6 +2242,94 @@
         setGlobalError(err.message)
       } finally {
         setBusy(btn, '正在生成...', false)
+      }
+    })
+
+    // 客户回复Tab：中文→英文
+    document.getElementById('sync-en-from-zh').addEventListener('click', async () => {
+      const zhText = document.getElementById('client-msg-zh').value.trim()
+      if (!zhText) { toast('中文内容为空'); return }
+      const btn = document.getElementById('sync-en-from-zh')
+      setBusy(btn, '同步中...', true)
+      try {
+        const en = await syncEnFromZh(zhText)
+        if (en) {
+          document.getElementById('client-msg-en').value = en
+          scheduleSaveActiveDraft()
+          toast('已同步英文')
+        } else {
+          toast('同步失败，请重试')
+        }
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '同步中...', false)
+      }
+    })
+
+    // 客户回复Tab：英文→中文
+    document.getElementById('sync-zh-from-en').addEventListener('click', async () => {
+      const enText = document.getElementById('client-msg-en').value.trim()
+      if (!enText) { toast('英文内容为空'); return }
+      const btn = document.getElementById('sync-zh-from-en')
+      setBusy(btn, '同步中...', true)
+      try {
+        const zh = await syncZhFromEn(enText)
+        if (zh) {
+          document.getElementById('client-msg-zh').value = zh
+          scheduleSaveActiveDraft()
+          toast('已同步中文')
+        } else {
+          toast('同步失败，请重试')
+        }
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '同步中...', false)
+      }
+    })
+
+    // 后续回复Tab：中文→英文
+    document.getElementById('sync-followup-en-from-zh').addEventListener('click', async () => {
+      const zhText = document.getElementById('followup-client-zh').value.trim()
+      if (!zhText) { toast('中文内容为空'); return }
+      const btn = document.getElementById('sync-followup-en-from-zh')
+      setBusy(btn, '同步中...', true)
+      try {
+        const en = await syncEnFromZh(zhText)
+        if (en) {
+          document.getElementById('followup-client-en').value = en
+          scheduleSaveActiveDraft()
+          toast('已同步英文')
+        } else {
+          toast('同步失败，请重试')
+        }
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '同步中...', false)
+      }
+    })
+
+    // 后续回复Tab：英文→中文
+    document.getElementById('sync-followup-zh-from-en').addEventListener('click', async () => {
+      const enText = document.getElementById('followup-client-en').value.trim()
+      if (!enText) { toast('英文内容为空'); return }
+      const btn = document.getElementById('sync-followup-zh-from-en')
+      setBusy(btn, '同步中...', true)
+      try {
+        const zh = await syncZhFromEn(enText)
+        if (zh) {
+          document.getElementById('followup-client-zh').value = zh
+          scheduleSaveActiveDraft()
+          toast('已同步中文')
+        } else {
+          toast('同步失败，请重试')
+        }
+      } catch (err) {
+        setGlobalError(err.message)
+      } finally {
+        setBusy(btn, '同步中...', false)
       }
     })
 
@@ -2348,24 +2524,21 @@
       const btn = document.getElementById('generate-followup')
       setBusy(btn, '正在生成...', true)
       try {
-        const caseSummary = [
-          draft.ai.summaryCategory ? `分类：${draft.ai.summaryCategory}` : '',
-          draft.ai.summaryPriority ? `优先级：${draft.ai.summaryPriority}` : '',
-          draft.ai.summaryCustomerRequest ? `客户诉求：${draft.ai.summaryCustomerRequest}` : '',
-          draft.ai.clientMsgEn ? `上次回复摘要：${draft.ai.clientMsgEn.slice(0, 300)}` : ''
-        ].filter(Boolean).join('；')
+        const caseSummary = draft.ai.summaryCustomerRequest || draft.originalEmail.slice(0, 200)
+        const lastReply = draft.ai.clientMsgEn ? draft.ai.clientMsgEn.slice(0, 200) : ''
 
         const prompt = [
-          '你将收到：案件摘要 + 客户后续回复。',
+          '你将收到：案件摘要 + 上次回复 + 客户最新回复。',
           '请基于上下文生成：给开发中文沟通话术 + 给客户英文回复（含中文翻译）。',
           LENGTH_CONSTRAINT,
           '输出严格 JSON：',
           '{ "developerMessage": "", "customerReplyCn": "", "customerReplyEn": "", "nextAction": "" }',
           '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；语气礼貌专业。',
           '- nextAction 说明下一步行动，如：等待客户提供截图、等待开发确认日志、可直接关闭等。',
-          `案件摘要：${caseSummary || draft.originalEmail.slice(0, 500)}`,
-          `客户后续回复：${followup}`
-        ].join('\n')
+          `案件摘要：${caseSummary}`,
+          lastReply ? `上次回复：${lastReply}` : '',
+          `客户最新回复：${followup}`
+        ].filter(Boolean).join('\n')
 
         const raw = await callAI(prompt, buildToneOptionsForGeneration())
         const parsed = parseAIOutput(raw, ['developerMessage', 'customerReplyCn', 'customerReplyEn'])
@@ -2457,6 +2630,31 @@
       }
     })
 
+    // 保存草稿
+    document.getElementById('save-reply-draft').addEventListener('click', () => {
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      draft.replyStatus = 'draft_saved'
+      saveDrafts(drafts)
+      updateReplyStatusBadge(draft)
+      toast('草稿已保存')
+    })
+
+    // 确认最终回复
+    document.getElementById('confirm-final-reply').addEventListener('click', () => {
+      const draft = getActiveDraft()
+      if (!draft) { toast('请先创建案件'); return }
+      readUIIntoDraft(draft)
+      draft.final.clientMsgEn = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+      draft.final.clientMsgZh = draft.edited.clientMsgZh || draft.ai.clientMsgZh || ''
+      draft.replyStatus = 'confirmed'
+      draft.timeline.push({ type: 'reply_confirmed', time: nowIso(), detail: '客户回复已确认' })
+      saveDrafts(drafts)
+      updateReplyStatusBadge(draft)
+      toast('已确认最终回复')
+    })
+
     // 完成案件（一键归档）
     document.getElementById('finish-case').addEventListener('click', async () => {
       setGlobalError('')
@@ -2517,6 +2715,15 @@
 
         draft.closedAt = nowIso()
         draft.updatedAt = nowIso()
+
+        // 归档时如果 replyStatus 不是 confirmed，自动将 edited 版本复制到 final
+        if (draft.replyStatus !== 'confirmed') {
+          draft.final.clientMsgEn = draft.edited.clientMsgEn || draft.ai.clientMsgEn || ''
+          draft.final.clientMsgZh = draft.edited.clientMsgZh || draft.ai.clientMsgZh || ''
+          draft.final.followupClientEn = draft.edited.followupClientEn || draft.ai.followupClientEn || ''
+          draft.final.followupClientZh = draft.edited.followupClientZh || draft.ai.followupClientZh || ''
+        }
+
         saveDrafts(drafts)
 
         const description = draft.edited.archiveDescription || draft.originalEmail || ''
@@ -2544,6 +2751,8 @@
             checklist: draft.checklist,
             ai: { ...draft.ai },
             edited: { ...draft.edited },
+            final: { ...draft.final },
+            replyStatus: draft.replyStatus,
             followupCustomer: draft.followupCustomer,
             timeline: draft.timeline
           }
@@ -2897,7 +3106,7 @@
         tr.appendChild(tdCategory)
 
         const tdPriority = document.createElement('td')
-        tdPriority.textContent = c.priority || '-'
+        tdPriority.textContent = PRIORITY_DISPLAY[c.priority] || c.priority || '-'
         tr.appendChild(tdPriority)
 
         const tdTime = document.createElement('td')
@@ -2977,12 +3186,34 @@
         const ai = process.ai || {}
         const edited = process.edited || {}
         const devMsgFinal = edited.devMsgZh || ai.devMsgZh || process.devMsgZh || ''
-        const clientEnFinal = edited.clientMsgEn || ai.clientMsgEn || process.clientMsgEn || ''
-        const clientZhFinal = edited.clientMsgZh || ai.clientMsgZh || process.clientMsgZh || ''
+
+        const finalObj = process.final || {}
+        const aiOriginalEn = ai.clientMsgEn || ''
+        const aiOriginalZh = ai.clientMsgZh || ''
+        const finalEn = finalObj.clientMsgEn || edited.clientMsgEn || aiOriginalEn
+        const finalZh = finalObj.clientMsgZh || edited.clientMsgZh || aiOriginalZh
 
         document.getElementById('case-view-dev').value = devMsgFinal
-        document.getElementById('case-view-client-en').value = clientEnFinal
-        document.getElementById('case-view-client-zh').value = clientZhFinal
+
+        // 如果AI原稿与最终版不同，显示AI原稿
+        const aiOriginalSection = document.getElementById('case-view-ai-original-section')
+        const aiOriginalZhSection = document.getElementById('case-view-ai-original-zh-section')
+        if (aiOriginalEn && aiOriginalEn !== finalEn) {
+          aiOriginalSection.style.display = 'block'
+          document.getElementById('case-view-ai-en').value = aiOriginalEn
+        } else {
+          aiOriginalSection.style.display = 'none'
+        }
+        if (aiOriginalZh && aiOriginalZh !== finalZh) {
+          aiOriginalZhSection.style.display = 'block'
+          document.getElementById('case-view-ai-zh').value = aiOriginalZh
+        } else {
+          aiOriginalZhSection.style.display = 'none'
+        }
+
+        // 使用final版本显示
+        document.getElementById('case-view-client-en').value = finalEn
+        document.getElementById('case-view-client-zh').value = finalZh
 
         // 后续回复
         const followupSection = document.getElementById('case-view-followup-section')
@@ -3007,10 +3238,10 @@
         if (ai.devMsgZh && ai.devMsgZh !== devMsgFinal) {
           aiLogParts.push('=== AI原始：给开发话术 ===\n' + ai.devMsgZh)
         }
-        if (ai.clientMsgEn && ai.clientMsgEn !== clientEnFinal) {
+        if (ai.clientMsgEn && ai.clientMsgEn !== finalEn) {
           aiLogParts.push('=== AI原始：给客户英文回复 ===\n' + ai.clientMsgEn)
         }
-        if (ai.clientMsgZh && ai.clientMsgZh !== clientZhFinal) {
+        if (ai.clientMsgZh && ai.clientMsgZh !== finalZh) {
           aiLogParts.push('=== AI原始：中文翻译 ===\n' + ai.clientMsgZh)
         }
         if (ai.summarySolution) {
@@ -3042,6 +3273,7 @@
           followup: '后续回复生成',
           case_summarize: '结案报告生成',
           case_closed: '归档完成',
+          reply_confirmed: '回复已确认',
           // 兼容旧数据
           customer_followup: '客户补充',
           ai_summarize: 'AI结案总结'
@@ -3218,7 +3450,7 @@
           const t0 = Date.now()
           const res = await callCloudflareWorkersAI(
             [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
-            { ...cfg, timeoutMs: 10000 }
+            { ...cfg, timeoutMs: AI_TIMEOUT }
           )
           const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
           results.push({ ok: true, provider: 'Cloudflare Workers AI', model: cfg.cfModel, elapsed })
@@ -3227,7 +3459,7 @@
           if (msg.includes('[ENV_UNAVAILABLE]')) {
             results.push({ ok: false, provider: 'Cloudflare Workers AI', error: '未绑定或不在 Pages 环境' })
           } else if (msg.includes('超时')) {
-            results.push({ ok: false, provider: 'Cloudflare Workers AI', error: '响应超时（10秒）' })
+            results.push({ ok: false, provider: 'Cloudflare Workers AI', error: '响应超时（20秒）' })
           } else {
             results.push({ ok: false, provider: 'Cloudflare Workers AI', error: msg.slice(0, 100) })
           }
@@ -3239,13 +3471,13 @@
           const t0 = Date.now()
           const res = await callOpenRouter(
             [{ role: 'system', content: '只回复OK' }, { role: 'user', content: 'OK' }],
-            { ...cfg, timeoutMs: 10000 }
+            { ...cfg, timeoutMs: AI_TIMEOUT }
           )
           const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
           results.push({ ok: true, provider: 'OpenRouter', model: cfg.openrouterModel, elapsed })
         } catch (err) {
           const msg = String(err?.message || err)
-          results.push({ ok: false, provider: 'OpenRouter', error: msg.includes('超时') ? '响应超时（10秒）' : msg.slice(0, 100) })
+          results.push({ ok: false, provider: 'OpenRouter', error: msg.includes('超时') ? '响应超时（20秒）' : msg.slice(0, 100) })
         }
       }
 
@@ -3296,6 +3528,20 @@
       setBusy(btn, '测试中...', false)
     })
 
+    // Cloudflare Workers AI 冷启动预热
+    async function warmupCloudflareAI() {
+      const cfg = getAiConfig()
+      if (cfg.mode === 'offline') return
+      try {
+        await callCloudflareWorkersAI(
+          [{ role: 'system', content: 'reply ok' }, { role: 'user', content: 'ok' }],
+          { ...cfg, timeoutMs: AI_TIMEOUT }
+        )
+      } catch (e) {
+        // 预热失败静默忽略（冷启动或环境不可用）
+      }
+    }
+
     // 初始化
     try {
       renderDraftTabs()
@@ -3304,6 +3550,7 @@
       renderToneTemplateSelect()
       renderTemplates()
       renderHistory()
+      warmupCloudflareAI()
     } catch (err) {
       setGlobalError(err.message || String(err))
     }
