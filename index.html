@@ -143,37 +143,57 @@
       margin-top: 6px;
     }
     .btn {
-      padding: 12px 24px;
+      padding: 0 16px;
+      height: 36px;
+      min-width: 80px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
+      font-weight: 500;
       transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
     }
     .btn-primary {
-      background-color: #07c160;
+      background-color: #1976d2;
       color: white;
     }
     .btn-primary:hover {
-      background-color: #06ad56;
+      background-color: #1565c0;
     }
     .btn-primary:disabled {
       background-color: #999;
       cursor: not-allowed;
     }
     .btn-secondary {
-      background-color: #ff9e80;
+      background-color: #757575;
       color: white;
     }
     .btn-secondary:hover {
-      background-color: #ff8a65;
+      background-color: #616161;
+    }
+    .btn-copy {
+      background-color: #2e7d32;
+      color: white;
+    }
+    .btn-copy:hover {
+      background-color: #1b5e20;
     }
     .btn-danger {
-      background-color: #f44336;
+      background-color: #d32f2f;
       color: white;
     }
     .btn-danger:hover {
-      background-color: #e53935;
+      background-color: #c62828;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
     }
     .result {
       margin-top: 20px;
@@ -545,8 +565,8 @@
           </select>
           <div id="case-list" class="case-list"></div>
           <div class="left-panel-actions">
-            <button id="rename-draft" class="btn btn-secondary copy-btn">重命名</button>
-            <button id="close-draft" class="btn btn-danger copy-btn">关闭</button>
+            <button id="rename-draft" class="btn btn-secondary">重命名</button>
+            <button id="close-draft" class="btn btn-danger">关闭</button>
           </div>
         </div>
 
@@ -576,11 +596,11 @@
           <!-- Tab2: 开发咨询 -->
           <div class="ws-tab-content" id="ws-dev-consult">
             <div class="section">
-              <div class="section-title">给开发的转发邮件/话术（中文，可编辑）</div>
+              <div class="section-title">开发咨询（中文，可编辑）</div>
               <textarea id="dev-msg" placeholder="AI处理案件后生成，或手动填写"></textarea>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-secondary copy-btn" data-copy-target="dev-msg">复制</button>
-                <button id="regen-dev-msg" class="btn btn-primary">重新生成</button>
+              <div class="btn-row">
+                <button id="regen-dev-msg" class="btn btn-secondary">重新生成</button>
+                <button class="btn btn-copy copy-btn" data-copy-target="dev-msg">复制</button>
               </div>
             </div>
           </div>
@@ -594,21 +614,29 @@
               </div>
               <div class="section-title">英文回复（可编辑）</div>
               <textarea id="client-msg-en" placeholder="AI处理案件后生成，或手动填写"></textarea>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-en">复制英文</button>
-                <button id="regen-customer-reply" class="btn btn-primary">重新生成</button>
+              <div class="btn-row">
+                <button id="regen-customer-reply" class="btn btn-secondary">重新生成</button>
                 <button id="sync-en-from-zh" class="btn btn-secondary" title="根据当前中文草稿重新生成英文">中文→英文</button>
+                <button class="btn btn-copy copy-btn" data-copy-target="client-msg-en">复制英文</button>
               </div>
 
               <div class="section-title" style="margin-top: 16px;">中文回复（可编辑）</div>
               <textarea id="client-msg-zh" placeholder="AI处理案件后生成，或手动填写"></textarea>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-secondary copy-btn" data-copy-target="client-msg-zh">复制中文</button>
+              <div class="btn-row">
                 <button id="sync-zh-from-en" class="btn btn-secondary" title="根据当前英文草稿重新生成中文">英文→中文</button>
+                <button class="btn btn-copy copy-btn" data-copy-target="client-msg-zh">复制中文</button>
               </div>
 
-              <div style="display:flex;gap:8px;margin-top:16px;">
-                <button id="save-reply-draft" class="btn btn-secondary">保存草稿</button>
+              <div class="section-title" style="margin-top:16px;">快捷优化</div>
+              <div class="btn-row">
+                <button id="optimize-concise" class="btn btn-secondary" title="压缩内容更简洁">简洁一点</button>
+                <button id="optimize-polite" class="btn btn-secondary" title="优化表达更礼貌">礼貌一点</button>
+                <button id="optimize-professional" class="btn btn-secondary" title="提升商务表达">专业一点</button>
+                <button id="optimize-compress" class="btn btn-secondary" title="自动缩写到100字以内">压缩到100字</button>
+              </div>
+
+              <div class="btn-row" style="margin-top:12px;">
+                <button id="save-reply-draft" class="btn btn-primary">保存草稿</button>
                 <button id="confirm-final-reply" class="btn btn-primary">确认最终回复</button>
               </div>
               <div class="help" style="margin-top:8px;">保存草稿：仅保存编辑内容。确认最终回复：锁定版本，归档时保存此版本。</div>
@@ -618,7 +646,7 @@
           <!-- Tab4: 后续回复 -->
           <div class="ws-tab-content" id="ws-followup">
             <div class="section">
-              <div class="section-title">客户后续回复（粘贴后生成对应回复 + 开发沟通话术）</div>
+              <div class="section-title">客户后续回复</div>
               <textarea id="customer-followup" placeholder="把客户后续回复粘贴到这里"></textarea>
               <button id="generate-followup" class="btn btn-primary">生成后续回复</button>
               <div id="followup-output" style="display:none; margin-top:12px;">
@@ -626,20 +654,26 @@
                   <div>
                     <div class="section-title">后续：给客户英文回复（可编辑）</div>
                     <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
-                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
-                    <button id="sync-followup-en-from-zh" class="btn btn-secondary" style="font-size:14px;" title="根据当前中文草稿重新生成英文">中文→英文</button>
+                    <div class="btn-row">
+                      <button id="sync-followup-en-from-zh" class="btn btn-secondary" title="根据当前中文草稿重新生成英文">中文→英文</button>
+                      <button class="btn btn-copy copy-btn" data-copy-target="followup-client-en">复制英文</button>
+                    </div>
                   </div>
                   <div>
                     <div class="section-title">后续：中文翻译（可编辑）</div>
                     <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
-                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
-                    <button id="sync-followup-zh-from-en" class="btn btn-secondary" style="font-size:14px;" title="根据当前英文草稿重新生成中文">英文→中文</button>
+                    <div class="btn-row">
+                      <button id="sync-followup-zh-from-en" class="btn btn-secondary" title="根据当前英文草稿重新生成中文">英文→中文</button>
+                      <button class="btn btn-copy copy-btn" data-copy-target="followup-client-zh">复制中文</button>
+                    </div>
                   </div>
                 </div>
                 <div style="margin-top:12px;">
                   <div class="section-title">后续：给开发的沟通话术（中文，可编辑）</div>
                   <textarea id="followup-dev-zh" placeholder="生成后会出现在这里"></textarea>
-                  <button class="btn btn-secondary copy-btn" data-copy-target="followup-dev-zh">复制</button>
+                  <div class="btn-row">
+                    <button class="btn btn-copy copy-btn" data-copy-target="followup-dev-zh">复制</button>
+                  </div>
                 </div>
                 <div style="margin-top:12px;" id="next-action-section">
                   <div class="section-title">下一步行动</div>
@@ -651,7 +685,9 @@
 
           <!-- Tab5: 结案归档 -->
           <div class="ws-tab-content" id="ws-archive">
-            <button id="ai-summarize-case" class="btn btn-secondary">AI生成结案总结</button>
+            <div class="btn-row" style="margin-bottom:16px;">
+              <button id="ai-summarize-case" class="btn btn-primary">生成结案总结</button>
+            </div>
             <div class="archive-field">
               <label>【案件描述】</label>
               <textarea id="archive-description" placeholder="案件问题描述（AI自动生成或手动填写）"></textarea>
@@ -668,9 +704,9 @@
               <label>【案件根本原因】</label>
               <textarea id="root-cause-input" placeholder="根因分析（如不确定写"待确认"）"></textarea>
             </div>
-            <div class="row" style="gap:12px; margin-top:16px;">
-              <button id="auto-fill-archive" class="btn btn-secondary" title="将AI生成的结案报告自动填入上方表单，你仍可修改后再归档">📋 带入归档内容</button>
-              <button id="finish-case" class="btn btn-primary" title="将当前表单内容保存到历史案件库，案件状态变为已结案">💾 归档到历史记录</button>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="auto-fill-archive" class="btn btn-secondary" title="将AI生成的结案报告自动填入上方表单，你仍可修改后再归档">带入归档内容</button>
+              <button id="finish-case" class="btn btn-primary" title="将当前表单内容保存到历史案件库，案件状态变为已结案">归档到历史记录</button>
             </div>
             <div class="help" style="margin-top:8px;">流程：AI生成结案总结 → 带入归档内容 → 检查修改 → 归档到历史记录</div>
           </div>
@@ -806,12 +842,12 @@
                   <div>
                     <div class="section-title">中文邮件（可编辑）</div>
                     <textarea id="reply-zh" placeholder="生成后会出现在这里"></textarea>
-                    <button class="btn btn-secondary copy-btn" data-copy-target="reply-zh">复制中文</button>
+                    <button class="btn btn-copy copy-btn" data-copy-target="reply-zh">复制中文</button>
                   </div>
                   <div>
                     <div class="section-title">英文邮件（可编辑）</div>
                     <textarea id="reply-en" placeholder="生成后会出现在这里"></textarea>
-                    <button class="btn btn-secondary copy-btn" data-copy-target="reply-en">复制英文</button>
+                    <button class="btn btn-copy copy-btn" data-copy-target="reply-en">复制英文</button>
                   </div>
                 </div>
               </div>
@@ -986,24 +1022,24 @@
       <div class="section">
         <div class="section-title">案件描述</div>
         <textarea id="case-view-description" style="height:160px;"></textarea>
-        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-description">复制</button>
+        <button class="btn btn-copy copy-btn" data-copy-target="case-view-description">复制</button>
       </div>
       <div class="section" id="case-view-process-section" style="display:none;">
         <div class="section-title">完整处理过程</div>
         <div class="section">
           <div class="section-title">原始邮件/案件内容</div>
           <textarea id="case-view-original" style="height:160px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-original">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-original">复制</button>
         </div>
         <div class="section">
           <div class="section-title">自查步骤</div>
           <textarea id="case-view-checklist" style="height:120px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-checklist">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-checklist">复制</button>
         </div>
         <div class="section">
           <div class="section-title">给开发话术（最终版）</div>
           <textarea id="case-view-dev" style="height:140px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-dev">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-dev">复制</button>
         </div>
         <div class="section" id="case-view-ai-original-section" style="display:none;">
           <div class="section-title">AI原稿（英文回复）</div>
@@ -1016,43 +1052,43 @@
         <div class="section">
           <div class="section-title">给客户英文回复（确认版）</div>
           <textarea id="case-view-client-en" style="height:140px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-en">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-client-en">复制</button>
         </div>
         <div class="section">
           <div class="section-title">中文翻译（确认版）</div>
           <textarea id="case-view-client-zh" style="height:140px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-client-zh">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-client-zh">复制</button>
         </div>
         <div class="section" id="case-view-followup-section" style="display:none;">
           <div class="section-title">客户后续与对应回复</div>
           <textarea id="case-view-followup" style="height:180px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-followup">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-followup">复制</button>
         </div>
         <div class="section">
           <div class="section-title">AI 中间结果（JSON）</div>
           <textarea id="case-view-ai-log" style="height:220px;"></textarea>
-          <button class="btn btn-secondary copy-btn" data-copy-target="case-view-ai-log">复制</button>
+          <button class="btn btn-copy copy-btn" data-copy-target="case-view-ai-log">复制</button>
         </div>
       </div>
       <div class="section" id="case-view-timeline-section" style="display:none;">
         <div class="section-title">Timeline</div>
         <textarea id="case-view-timeline" style="height:300px;" readonly></textarea>
-        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-timeline">复制</button>
+        <button class="btn btn-copy copy-btn" data-copy-target="case-view-timeline">复制</button>
       </div>
       <div class="section">
         <div class="section-title">解决方案</div>
         <textarea id="case-view-solution" style="height:120px;"></textarea>
-        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-solution">复制</button>
+        <button class="btn btn-copy copy-btn" data-copy-target="case-view-solution">复制</button>
       </div>
       <div class="section">
         <div class="section-title">根本原因</div>
         <textarea id="case-view-rootcause" style="height:120px;"></textarea>
-        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-rootcause">复制</button>
+        <button class="btn btn-copy copy-btn" data-copy-target="case-view-rootcause">复制</button>
       </div>
       <div class="section">
         <div class="section-title">备注</div>
         <textarea id="case-view-remark" style="height:120px;"></textarea>
-        <button class="btn btn-secondary copy-btn" data-copy-target="case-view-remark">复制</button>
+        <button class="btn btn-copy copy-btn" data-copy-target="case-view-remark">复制</button>
       </div>
     </div>
   </dialog>
@@ -1082,14 +1118,14 @@
     }
 
     const DEFAULT_SYSTEM_PROMPT = [
-      '你是一个专业的技术支持客服 Agent，面向客户沟通。',
-      '目标：根据输入生成清晰、简洁、礼貌的中英文邮件与案件处理文案。',
-      '要求：不编造事实；不输出与请求无关的内容；必要时明确需要的信息；语言自然、语气符合客户风格参考。',
-      '客户回复要求：简洁、清晰、明了、礼貌，直接回应客户问题，不做无意义寒暄和过度客套。',
-      '输出：按指定的结构输出。'
+      '你是一个专业的B2B企业客服 Agent，面向企业客户（Customer），不是终端用户（User）。',
+      '客户回复要求：简洁、清晰、礼貌、专业、结果导向；80~150字，最大200字；客户读完后必须立即知道：问题状态、当前进展、下一步安排。',
+      '开发咨询要求：准确、简洁、技术导向；50~120字；允许技术术语、日志信息、排查建议。',
+      '禁止：过度感谢、过度客套、重复表达、长篇解释、AI口吻、编造事实。',
+      '输出：按用户指定的结构输出。'
     ].join('\n')
 
-    const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~180词，中文翻译80~180字，开发咨询50~120字。禁止重复表达、过度客套、无意义寒暄。'
+    const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~150词（最大200），中文80~150字（最大200），开发咨询50~120字。禁止：过度感谢、过度客套、重复表达、长篇解释、AI口吻。客户读完后必须立即知道问题状态、当前进展、下一步安排。'
 
     const PRIORITY_DISPLAY = { '高': '🔴 高', '中': '🟡 中', '低': '🟢 低' }
 
@@ -1267,14 +1303,14 @@
       const cached = safeJsonParse(localStorage.getItem(STORAGE_KEYS.styleProfile), null)
       if (cached && cached.style) {
         return [
-          '客户风格画像：',
+          '用户风格画像：',
           `- 语气：${cached.tone || '适中'}`,
           `- 长度：${cached.length || '中等'}`,
           `- 开头：${cached.greeting || '无固定'}`,
           `- 结尾：${cached.closing || '无固定'}`,
           `- 风格：${cached.style}`,
           '',
-          '写作要求：严格遵循此风格画像，面向客户沟通，简洁、清晰、礼貌，不编造信息，不添加未提及的承诺。'
+          '写作要求：严格遵循此风格画像，不编造信息，不添加未提及的承诺。'
         ].join('\n')
       }
 
@@ -1317,7 +1353,7 @@
       localStorage.setItem(STORAGE_KEYS.styleProfile, JSON.stringify(profile))
 
       return [
-        '客户风格画像：',
+        '用户风格画像：',
         `- 语气：${profile.tone}`,
         `- 长度：${profile.length}`,
         `- 开头：${profile.greeting || '无固定'}`,
@@ -2179,12 +2215,12 @@
 
     async function generateBilingualEmail(requirement) {
       const prompt = [
-        '请根据需求生成两封邮件：中文邮件 + 英文邮件。',
+        '请根据用户需求生成两封邮件：中文邮件 + 英文邮件。',
         '两封邮件内容一致但符合各自语言习惯；语气礼貌专业；可以直接复制发送。',
         LENGTH_CONSTRAINT,
         '输出严格使用 JSON：',
         '{ "zh": "...", "en": "..." }',
-        `需求：${requirement}`
+        `用户需求：${requirement}`
       ].join('\n')
       const raw = await callAI(prompt, buildToneOptionsForGeneration())
       const parsed = parseAIOutput(raw, ['zh', 'en'])
@@ -2199,8 +2235,8 @@
     async function syncEnFromZh(chineseText) {
       if (!chineseText) { toast('中文内容为空'); return '' }
       const prompt = [
-        '请将以下中文邮件翻译为专业客服英文邮件，面向客户沟通。',
-        '保持：语气、礼貌程度、段落结构。不要增加额外内容。回复简洁、清晰、礼貌。',
+        '请将以下中文邮件翻译为专业客服英文邮件。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
         LENGTH_CONSTRAINT,
         '输出严格 JSON：{ "english": "" }',
         `中文邮件：${chineseText}`
@@ -2213,8 +2249,8 @@
     async function syncZhFromEn(englishText) {
       if (!englishText) { toast('英文内容为空'); return '' }
       const prompt = [
-        '请将以下英文邮件翻译为专业客服中文邮件，面向客户沟通。',
-        '保持：语气、礼貌程度、段落结构。不要增加额外内容。回复简洁、清晰、礼貌。',
+        '请将以下英文邮件翻译为专业客服中文邮件。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
         LENGTH_CONSTRAINT,
         '输出严格 JSON：{ "chinese": "" }',
         `英文邮件：${englishText}`
@@ -2222,6 +2258,28 @@
       const raw = await callAI(prompt, {})
       const parsed = parseAIOutput(raw, ['chinese'])
       return parsed.chinese || ''
+    }
+
+    // 快捷优化函数
+    async function optimizeReply(enText, zhText, mode) {
+      const modeMap = {
+        concise: { label: '简洁', instruction: '压缩内容，去除冗余表达和过度客套，保持核心信息不变，使回复更简洁直接。' },
+        polite: { label: '礼貌', instruction: '优化表达更礼貌得体，保持内容不变，仅调整措辞使语气更温和专业。' },
+        professional: { label: '专业', instruction: '提升商务表达水平，使用更专业的措辞和术语，保持内容不变。' },
+        compress: { label: '压缩', instruction: '将内容压缩到100字以内（英文100词以内），保留最核心信息：问题状态、当前进展、下一步安排。删除所有客套和解释。' }
+      }
+      const m = modeMap[mode]
+      if (!m) return { en: '', zh: '' }
+      const prompt = [
+        `请优化以下客户回复邮件，要求：${m.instruction}`,
+        LENGTH_CONSTRAINT,
+        '输出严格 JSON：{ "english": "", "chinese": "" }',
+        `当前英文：${enText}`,
+        `当前中文：${zhText}`
+      ].join('\n')
+      const raw = await callAI(prompt, {})
+      const parsed = parseAIOutput(raw, ['english', 'chinese'])
+      return { en: parsed.english || '', zh: parsed.chinese || '' }
     }
 
     document.getElementById('generate-reply').addEventListener('click', async () => {
@@ -2360,7 +2418,7 @@
           '- analysis.customerRequest 一句话总结客户核心诉求',
           '- checklist 是通俗自查步骤，不用专业术语；覆盖：问题点是否完整、附件、截止时间、是否需要开发、是否有遗漏需求。',
           '- reply.developerMessage 是给开发的中文转发邮件/话术：说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
-          '- reply.customerReplyEn 是给客户的英文回复：简洁、清晰、礼貌，确认已收到、说明正在处理、承诺会更新进展，但不编造时间点，不做无意义寒暄。',
+          '- reply.customerReplyEn 是给客户的英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
           '- reply.customerReplyCn 是 reply.customerReplyEn 的中文翻译。',
           LENGTH_CONSTRAINT,
           `客户案件内容：${caseContent}`
@@ -2483,7 +2541,7 @@
       try {
         const prompt = [
           '你将收到一段客户案件内容，请生成给客户的英文回复和中文翻译。',
-          '英文回复要求：简洁、清晰、礼貌，直接回应客户问题，不做无意义寒暄和过度客套。',
+          '英文回复：确认已收到、说明正在排查/转交技术团队、承诺会更新进展，但不编造时间点。',
           LENGTH_CONSTRAINT,
           '输出严格 JSON：',
           '{ "customerReplyEn": "", "customerReplyCn": "" }',
@@ -2534,7 +2592,7 @@
           LENGTH_CONSTRAINT,
           '输出严格 JSON：',
           '{ "developerMessage": "", "customerReplyCn": "", "customerReplyEn": "", "nextAction": "" }',
-          '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；客户回复简洁、清晰、礼貌，不做无意义寒暄。',
+          '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；语气礼貌专业。',
           '- nextAction 说明下一步行动，如：等待客户提供截图、等待开发确认日志、可直接关闭等。',
           `案件摘要：${caseSummary}`,
           lastReply ? `上次回复：${lastReply}` : '',
@@ -2654,6 +2712,33 @@
       saveDrafts(drafts)
       updateReplyStatusBadge(draft)
       toast('已确认最终回复')
+    })
+
+    // 快捷优化按钮
+    ['concise', 'polite', 'professional', 'compress'].forEach(mode => {
+      const btnId = `optimize-${mode}`
+      document.getElementById(btnId).addEventListener('click', async () => {
+        const enText = document.getElementById('client-msg-en').value.trim()
+        const zhText = document.getElementById('client-msg-zh').value.trim()
+        if (!enText && !zhText) { toast('请先生成客户回复'); return }
+        const btn = document.getElementById(btnId)
+        setBusy(btn, '优化中...', true)
+        try {
+          const result = await optimizeReply(enText, zhText, mode)
+          if (result.en) document.getElementById('client-msg-en').value = result.en
+          if (result.zh) document.getElementById('client-msg-zh').value = result.zh
+          if (result.en || result.zh) {
+            scheduleSaveActiveDraft()
+            toast('已优化')
+          } else {
+            toast('优化失败，请重试')
+          }
+        } catch (err) {
+          setGlobalError(err.message)
+        } finally {
+          setBusy(btn, '优化中...', false)
+        }
+      })
     })
 
     // 完成案件（一键归档）
@@ -2933,7 +3018,7 @@
         btnRow.style.flexWrap = 'wrap'
 
         const copyBtn = document.createElement('button')
-        copyBtn.className = 'btn btn-secondary copy-btn'
+        copyBtn.className = 'btn btn-copy copy-btn'
         copyBtn.textContent = '复制'
         copyBtn.addEventListener('click', async () => {
           const ok = await copyToClipboard(t.content)
@@ -2942,7 +3027,7 @@
         btnRow.appendChild(copyBtn)
 
         const renameBtn = document.createElement('button')
-        renameBtn.className = 'btn btn-secondary copy-btn'
+        renameBtn.className = 'btn btn-secondary'
         renameBtn.textContent = '重命名'
         renameBtn.addEventListener('click', () => {
           const name = prompt('请输入新的模板名称：', t.name)
@@ -2955,7 +3040,7 @@
         btnRow.appendChild(renameBtn)
 
         const delBtn = document.createElement('button')
-        delBtn.className = 'btn btn-danger copy-btn'
+        delBtn.className = 'btn btn-danger'
         delBtn.textContent = '删除'
         delBtn.addEventListener('click', () => {
           if (!confirm('确定要删除这个模板吗？')) return
@@ -3140,13 +3225,13 @@
 
         const tdActions = document.createElement('td')
         const viewBtn = document.createElement('button')
-        viewBtn.className = 'btn btn-secondary copy-btn'
+        viewBtn.className = 'btn btn-copy copy-btn'
         viewBtn.textContent = '查看'
         viewBtn.addEventListener('click', () => openCaseDialog(c.id))
         tdActions.appendChild(viewBtn)
 
         const delBtn = document.createElement('button')
-        delBtn.className = 'btn btn-danger copy-btn'
+        delBtn.className = 'btn btn-danger'
         delBtn.style.marginLeft = '8px'
         delBtn.textContent = '删除'
         delBtn.addEventListener('click', () => deleteCase(c.id))
