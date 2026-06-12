@@ -633,6 +633,7 @@
                 <button id="optimize-polite" class="btn btn-secondary" title="优化表达更礼貌">礼貌一点</button>
                 <button id="optimize-professional" class="btn btn-secondary" title="提升商务表达">专业一点</button>
                 <button id="optimize-compress" class="btn btn-secondary" title="自动缩写到100字以内">压缩到100字</button>
+                <button id="undo-optimize" class="btn btn-secondary" title="撤销最近一次优化">撤销优化</button>
               </div>
 
               <div class="btn-row" style="margin-top:12px;">
@@ -706,6 +707,7 @@
             </div>
             <div class="btn-row" style="margin-top:16px;">
               <button id="auto-fill-archive" class="btn btn-secondary" title="将AI生成的结案报告自动填入上方表单，你仍可修改后再归档">带入归档内容</button>
+              <button id="copy-archive-report" class="btn btn-copy" title="复制结构化结案报告到剪贴板">复制结案报告</button>
               <button id="finish-case" class="btn btn-primary" title="将当前表单内容保存到历史案件库，案件状态变为已结案">归档到历史记录</button>
             </div>
             <div class="help" style="margin-top:8px;">流程：AI生成结案总结 → 带入归档内容 → 检查修改 → 归档到历史记录</div>
@@ -1007,6 +1009,13 @@
             <button id="test-ai" class="btn btn-secondary">测试连接</button>
           </div>
           <div class="help">自动模式会优先走 Cloudflare Workers AI（同源 /api/ai），不可用时回退离线；你也可以切到"在线（OpenAI兼容直连）"。</div>
+
+          <div style="margin-top:16px;">
+            <div class="card-title">AI请求日志（最近50条）</div>
+            <div id="ai-logs-container" style="max-height:300px;overflow-y:auto;font-size:12px;background:#f5f5f5;border-radius:8px;padding:8px;">
+              <div class="help">暂无请求记录</div>
+            </div>
+          </div>
         </div>
       </details>
     </div>
@@ -1716,29 +1725,79 @@
       return String(content).trim()
     }
 
+    // AI请求日志
+    const aiRequestLogs = []
+    const MAX_AI_LOGS = 50
+
+    function logAiRequest(log) {
+      aiRequestLogs.unshift({
+        time: nowIso(),
+        model: log.model || '-',
+        provider: log.provider || '-',
+        duration: log.duration || 0,
+        promptLength: log.promptLength || 0,
+        success: log.success,
+        error: log.error || ''
+      })
+      if (aiRequestLogs.length > MAX_AI_LOGS) aiRequestLogs.length = MAX_AI_LOGS
+      renderAiLogs()
+    }
+
+    function renderAiLogs() {
+      const container = document.getElementById('ai-logs-container')
+      if (!container) return
+      if (!aiRequestLogs.length) {
+        container.innerHTML = '<div class="help">暂无请求记录</div>'
+        return
+      }
+      container.innerHTML = aiRequestLogs.map(log => {
+        const icon = log.success ? '✅' : '❌'
+        const dur = log.duration >= 1000 ? (log.duration / 1000).toFixed(1) + 's' : log.duration + 'ms'
+        const errPart = log.error ? ` <span style="color:#d32f2f;">${log.error.slice(0, 80)}</span>` : ''
+        return `<div style="padding:4px 0;border-bottom:1px solid #eee;">${icon} ${log.provider} | ${log.model.slice(0, 30)} | ${dur} | ${log.promptLength}字${errPart}</div>`
+      }).join('')
+    }
+
     async function callAI(userPrompt, options) {
       const cfg = getAiConfig()
       const messages = buildMessages(cfg.systemPrompt, options?.toneReference || '', userPrompt)
       const timeoutMs = options?.timeoutMs || undefined
+      const promptLength = messages.reduce((n, m) => n + String(m.content || '').length, 0)
+      const t0 = Date.now()
 
       if (cfg.mode === 'offline') {
-        return await callOffline(messages, cfg)
+        try {
+          const r = await callOffline(messages, cfg)
+          logAiRequest({ model: cfg.offlineModel, provider: '离线', duration: Date.now() - t0, promptLength, success: true })
+          return r
+        } catch (err) {
+          logAiRequest({ model: cfg.offlineModel, provider: '离线', duration: Date.now() - t0, promptLength, success: false, error: String(err?.message || err) })
+          throw err
+        }
       }
 
       if (cfg.mode === 'online') {
-        if (cfg.onlineProvider === 'cloudflare_workers_ai') {
-          return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+        const provider = cfg.onlineProvider === 'cloudflare_workers_ai' ? 'Cloudflare' : cfg.onlineProvider === 'openrouter' ? 'OpenRouter' : '直连'
+        const model = cfg.onlineProvider === 'cloudflare_workers_ai' ? cfg.cfModel : cfg.onlineProvider === 'openrouter' ? cfg.openrouterModel : cfg.model
+        try {
+          let r
+          if (cfg.onlineProvider === 'cloudflare_workers_ai') r = await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+          else if (cfg.onlineProvider === 'openrouter') r = await callOpenRouter(messages, { ...cfg, timeoutMs })
+          else r = await callOpenAICompatDirect(messages, cfg)
+          logAiRequest({ model, provider, duration: Date.now() - t0, promptLength, success: true })
+          return r
+        } catch (err) {
+          logAiRequest({ model, provider, duration: Date.now() - t0, promptLength, success: false, error: String(err?.message || err) })
+          throw err
         }
-        if (cfg.onlineProvider === 'openrouter') {
-          return await callOpenRouter(messages, { ...cfg, timeoutMs })
-        }
-        return await callOpenAICompatDirect(messages, cfg)
       }
 
       // auto 模式：Cloudflare → OpenRouter → 离线 → OpenAI兼容
       const errors = []
       try {
-        return await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+        const r = await callCloudflareWorkersAI(messages, { ...cfg, timeoutMs })
+        logAiRequest({ model: cfg.cfModel, provider: 'Cloudflare', duration: Date.now() - t0, promptLength, success: true })
+        return r
       } catch (err) {
         const msg = String(err?.message || err)
         if (!msg.includes('[ENV_UNAVAILABLE]')) {
@@ -1748,7 +1807,9 @@
 
       if (cfg.openrouterKey) {
         try {
-          return await callOpenRouter(messages, { ...cfg, timeoutMs })
+          const r = await callOpenRouter(messages, { ...cfg, timeoutMs })
+          logAiRequest({ model: cfg.openrouterModel, provider: 'OpenRouter', duration: Date.now() - t0, promptLength, success: true })
+          return r
         } catch (err) {
           errors.push(`OpenRouter：${String(err?.message || err)}`)
         }
@@ -1756,7 +1817,9 @@
 
       if (offlineState.engine) {
         try {
-          return await callOffline(messages, cfg)
+          const r = await callOffline(messages, cfg)
+          logAiRequest({ model: cfg.offlineModel, provider: '离线', duration: Date.now() - t0, promptLength, success: true })
+          return r
         } catch (err) {
           errors.push(`离线模式：${String(err?.message || err)}`)
         }
@@ -1764,12 +1827,15 @@
 
       if (cfg.baseUrl && cfg.model && cfg.apiKey) {
         try {
-          return await callOpenAICompatDirect(messages, cfg)
+          const r = await callOpenAICompatDirect(messages, cfg)
+          logAiRequest({ model: cfg.model, provider: '直连', duration: Date.now() - t0, promptLength, success: true })
+          return r
         } catch (err) {
           errors.push(`在线直连：${String(err?.message || err)}`)
         }
       }
 
+      logAiRequest({ model: 'auto', provider: '全部失败', duration: Date.now() - t0, promptLength, success: false, error: errors.join('; ') })
       throw new Error(errors.join('\n') || 'AI调用失败')
     }
 
@@ -1887,6 +1953,7 @@
           followupClientZh: String((d?.final || {})?.followupClientZh || '').trim()
         },
         replyStatus: String(d?.replyStatus || 'ai_generated').trim(),
+        lastEditedLanguage: String(d?.lastEditedLanguage || '').trim(),
         timeline
       }
     }
@@ -2052,10 +2119,10 @@
       const badge = document.getElementById('reply-status-badge')
       if (!badge) return
       const statusMap = {
-        ai_generated: { text: 'AI生成', cls: 'status-ai' },
-        draft_editing: { text: '编辑中', cls: 'status-draft' },
-        draft_saved: { text: '已保存草稿', cls: 'status-saved' },
-        confirmed: { text: '已确认', cls: 'status-confirmed' }
+        ai_generated: { text: '🟡 AI原稿', cls: 'status-ai' },
+        draft_editing: { text: '🟠 编辑中', cls: 'status-draft' },
+        draft_saved: { text: '🟠 已保存草稿', cls: 'status-draft' },
+        confirmed: { text: '🟢 已确认最终版', cls: 'status-confirmed' }
       }
       const s = statusMap[draft.replyStatus] || statusMap.ai_generated
       badge.textContent = s.text
@@ -2121,6 +2188,11 @@
       if (draft.replyStatus === 'ai_generated' && (draft.edited.clientMsgEn !== draft.ai.clientMsgEn || draft.edited.clientMsgZh !== draft.ai.clientMsgZh)) {
         draft.replyStatus = 'draft_editing'
       }
+      // 记录最后编辑的语言
+      const enEl = document.getElementById('client-msg-en')
+      const zhEl = document.getElementById('client-msg-zh')
+      if (document.activeElement === enEl) draft.lastEditedLanguage = 'en'
+      else if (document.activeElement === zhEl) draft.lastEditedLanguage = 'zh'
     }
 
     let drafts = loadDrafts()
@@ -2278,9 +2350,15 @@
         `当前中文：${zhText}`
       ].join('\n')
       const raw = await callAI(prompt, {})
-      const parsed = parseAIOutput(raw, ['english', 'chinese'])
-      return { en: parsed.english || '', zh: parsed.chinese || '' }
+      const parsed = parseAIOutput(raw, ['english', 'chinese', 'customerReplyEn', 'customerReplyCn', 'en', 'zh'])
+      // 兼容多种字段名
+      const enResult = parsed.english || parsed.customerReplyEn || parsed.en || ''
+      const zhResult = parsed.chinese || parsed.customerReplyCn || parsed.zh || ''
+      return { en: enResult, zh: zhResult }
     }
+
+    // 撤销优化：保留最近一次优化前内容
+    let lastOptimizeSnapshot = null
 
     document.getElementById('generate-reply').addEventListener('click', async () => {
       setGlobalError('')
@@ -2721,6 +2799,8 @@
         const enText = document.getElementById('client-msg-en').value.trim()
         const zhText = document.getElementById('client-msg-zh').value.trim()
         if (!enText && !zhText) { toast('请先生成客户回复'); return }
+        // 保存快照用于撤销
+        lastOptimizeSnapshot = { en: enText, zh: zhText }
         const btn = document.getElementById(btnId)
         setBusy(btn, '优化中...', true)
         try {
@@ -2729,16 +2809,28 @@
           if (result.zh) document.getElementById('client-msg-zh').value = result.zh
           if (result.en || result.zh) {
             scheduleSaveActiveDraft()
-            toast('已优化')
+            toast('已优化（可撤销）')
           } else {
             toast('优化失败，请重试')
+            lastOptimizeSnapshot = null
           }
         } catch (err) {
           setGlobalError(err.message)
+          lastOptimizeSnapshot = null
         } finally {
           setBusy(btn, '优化中...', false)
         }
       })
+    })
+
+    // 撤销优化
+    document.getElementById('undo-optimize').addEventListener('click', () => {
+      if (!lastOptimizeSnapshot) { toast('没有可撤销的操作'); return }
+      document.getElementById('client-msg-en').value = lastOptimizeSnapshot.en
+      document.getElementById('client-msg-zh').value = lastOptimizeSnapshot.zh
+      lastOptimizeSnapshot = null
+      scheduleSaveActiveDraft()
+      toast('已撤销')
     })
 
     // 完成案件（一键归档）
@@ -2903,6 +2995,22 @@
 
       scheduleSaveActiveDraft()
       toast('已带入归档内容，请检查修改后点击"归档到历史记录"')
+    })
+
+    // 一键复制结案报告
+    document.getElementById('copy-archive-report').addEventListener('click', () => {
+      const desc = document.getElementById('archive-description').value.trim()
+      const solution = document.getElementById('solution-input').value.trim()
+      const remark = document.getElementById('remark-input').value.trim()
+      const rootCause = document.getElementById('root-cause-input').value.trim()
+      if (!desc && !solution && !remark && !rootCause) { toast('结案报告为空'); return }
+      const report = [
+        desc ? `【案件描述】\n${desc}` : '',
+        solution ? `【解决方案】\n${solution}` : '',
+        rootCause ? `【根本原因】\n${rootCause}` : '',
+        remark ? `【备注】\n${remark}` : ''
+      ].filter(Boolean).join('\n\n')
+      navigator.clipboard.writeText(report).then(() => toast('已复制结案报告')).catch(() => toast('复制失败'))
     })
 
     // 新建/关闭/重命名 draft 按钮
