@@ -576,7 +576,7 @@
           <!-- Tab2: 开发咨询 -->
           <div class="ws-tab-content" id="ws-dev-consult">
             <div class="section">
-              <div class="section-title">开发咨询（中文，可编辑）</div>
+              <div class="section-title">给开发的转发邮件/话术（中文，可编辑）</div>
               <textarea id="dev-msg" placeholder="AI处理案件后生成，或手动填写"></textarea>
               <div style="display:flex;gap:8px;">
                 <button class="btn btn-secondary copy-btn" data-copy-target="dev-msg">复制</button>
@@ -626,18 +626,14 @@
                   <div>
                     <div class="section-title">后续：给客户英文回复（可编辑）</div>
                     <textarea id="followup-client-en" placeholder="生成后会出现在这里"></textarea>
-                    <div style="display:flex;gap:8px;">
-                      <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
-                      <button id="sync-followup-en-from-zh" class="btn btn-secondary" title="根据当前中文草稿重新生成英文">中文→英文</button>
-                    </div>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-en">复制英文</button>
+                    <button id="sync-followup-en-from-zh" class="btn btn-secondary" style="font-size:14px;" title="根据当前中文草稿重新生成英文">中文→英文</button>
                   </div>
                   <div>
-                    <div class="section-title">后续：中文回复（可编辑）</div>
+                    <div class="section-title">后续：中文翻译（可编辑）</div>
                     <textarea id="followup-client-zh" placeholder="生成后会出现在这里"></textarea>
-                    <div style="display:flex;gap:8px;">
-                      <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
-                      <button id="sync-followup-zh-from-en" class="btn btn-secondary" title="根据当前英文草稿重新生成中文">英文→中文</button>
-                    </div>
+                    <button class="btn btn-secondary copy-btn" data-copy-target="followup-client-zh">复制中文</button>
+                    <button id="sync-followup-zh-from-en" class="btn btn-secondary" style="font-size:14px;" title="根据当前英文草稿重新生成中文">英文→中文</button>
                   </div>
                 </div>
                 <div style="margin-top:12px;">
@@ -1086,13 +1082,14 @@
     }
 
     const DEFAULT_SYSTEM_PROMPT = [
-      '你是一个专业的技术支持客服 Agent。',
-      '目标：根据客户案件内容，生成清晰、简洁、礼貌的中英文邮件与案件处理文案。',
-      '要求：不编造事实；不输出与请求无关的内容；必要时明确需要的信息；语言自然、语气符合风格参考。',
-      '输出：按指定的结构输出。客户回复必须简洁、清晰、明了、礼貌，直接回应客户问题，不做多余解释。'
+      '你是一个专业的技术支持客服 Agent，面向客户沟通。',
+      '目标：根据输入生成清晰、简洁、礼貌的中英文邮件与案件处理文案。',
+      '要求：不编造事实；不输出与请求无关的内容；必要时明确需要的信息；语言自然、语气符合客户风格参考。',
+      '客户回复要求：简洁、清晰、明了、礼貌，直接回应客户问题，不做无意义寒暄和过度客套。',
+      '输出：按指定的结构输出。'
     ].join('\n')
 
-    const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~180词，中文回复80~180字，开发咨询50~120字。客户回复要求：简洁、清晰、明了、礼貌，直接回应客户问题，禁止重复表达、过度客套、无意义寒暄、多余解释。'
+    const LENGTH_CONSTRAINT = '长度约束：客户英文回复80~180词，中文翻译80~180字，开发咨询50~120字。禁止重复表达、过度客套、无意义寒暄。'
 
     const PRIORITY_DISPLAY = { '高': '🔴 高', '中': '🟡 中', '低': '🟢 低' }
 
@@ -1270,14 +1267,14 @@
       const cached = safeJsonParse(localStorage.getItem(STORAGE_KEYS.styleProfile), null)
       if (cached && cached.style) {
         return [
-          '风格画像：',
+          '客户风格画像：',
           `- 语气：${cached.tone || '适中'}`,
           `- 长度：${cached.length || '中等'}`,
           `- 开头：${cached.greeting || '无固定'}`,
           `- 结尾：${cached.closing || '无固定'}`,
           `- 风格：${cached.style}`,
           '',
-          '写作要求：严格遵循此风格画像。客户回复必须简洁、清晰、明了、礼貌，直接回应客户问题，不编造信息，不添加未提及的承诺，不做多余解释。'
+          '写作要求：严格遵循此风格画像，面向客户沟通，简洁、清晰、礼貌，不编造信息，不添加未提及的承诺。'
         ].join('\n')
       }
 
@@ -1320,7 +1317,7 @@
       localStorage.setItem(STORAGE_KEYS.styleProfile, JSON.stringify(profile))
 
       return [
-        '风格画像：',
+        '客户风格画像：',
         `- 语气：${profile.tone}`,
         `- 长度：${profile.length}`,
         `- 开头：${profile.greeting || '无固定'}`,
@@ -2202,8 +2199,8 @@
     async function syncEnFromZh(chineseText) {
       if (!chineseText) { toast('中文内容为空'); return '' }
       const prompt = [
-        '请将以下中文客户回复翻译为专业客服英文邮件。要求：简洁、清晰、明了、礼貌，直接回应客户问题，不做多余解释。',
-        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
+        '请将以下中文邮件翻译为专业客服英文邮件，面向客户沟通。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。回复简洁、清晰、礼貌。',
         LENGTH_CONSTRAINT,
         '输出严格 JSON：{ "english": "" }',
         `中文邮件：${chineseText}`
@@ -2216,8 +2213,8 @@
     async function syncZhFromEn(englishText) {
       if (!englishText) { toast('英文内容为空'); return '' }
       const prompt = [
-        '请将以下英文客户回复翻译为专业客服中文邮件。要求：简洁、清晰、明了、礼貌，直接回应客户问题，不做多余解释。',
-        '保持：语气、礼貌程度、段落结构。不要增加额外内容。',
+        '请将以下英文邮件翻译为专业客服中文邮件，面向客户沟通。',
+        '保持：语气、礼貌程度、段落结构。不要增加额外内容。回复简洁、清晰、礼貌。',
         LENGTH_CONSTRAINT,
         '输出严格 JSON：{ "chinese": "" }',
         `英文邮件：${englishText}`
@@ -2363,7 +2360,7 @@
           '- analysis.customerRequest 一句话总结客户核心诉求',
           '- checklist 是通俗自查步骤，不用专业术语；覆盖：问题点是否完整、附件、截止时间、是否需要开发、是否有遗漏需求。',
           '- reply.developerMessage 是给开发的中文转发邮件/话术：说明客户问题、复现信息、需要开发支持点、建议排查方向（如有）。',
-          '- reply.customerReplyEn 是给客户的英文回复：简洁、清晰、明了、礼貌，直接回应客户问题，确认已收到、说明正在处理，但不编造时间点，不做多余解释。',
+          '- reply.customerReplyEn 是给客户的英文回复：简洁、清晰、礼貌，确认已收到、说明正在处理、承诺会更新进展，但不编造时间点，不做无意义寒暄。',
           '- reply.customerReplyCn 是 reply.customerReplyEn 的中文翻译。',
           LENGTH_CONSTRAINT,
           `客户案件内容：${caseContent}`
@@ -2486,7 +2483,7 @@
       try {
         const prompt = [
           '你将收到一段客户案件内容，请生成给客户的英文回复和中文翻译。',
-          '客户回复要求：简洁、清晰、明了、礼貌，直接回应客户问题，确认已收到、说明正在处理，但不编造时间点，不做多余解释。',
+          '英文回复要求：简洁、清晰、礼貌，直接回应客户问题，不做无意义寒暄和过度客套。',
           LENGTH_CONSTRAINT,
           '输出严格 JSON：',
           '{ "customerReplyEn": "", "customerReplyCn": "" }',
@@ -2533,11 +2530,11 @@
 
         const prompt = [
           '你将收到：案件摘要 + 上次回复 + 客户最新回复。',
-          '请基于上下文生成：给开发中文沟通话术 + 给客户英文回复（含中文翻译）。客户回复要求：简洁、清晰、明了、礼貌，直接回应客户问题，不做多余解释。',
+          '请基于上下文生成：给开发中文沟通话术 + 给客户英文回复（含中文翻译）。',
           LENGTH_CONSTRAINT,
           '输出严格 JSON：',
           '{ "developerMessage": "", "customerReplyCn": "", "customerReplyEn": "", "nextAction": "" }',
-          '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；语气礼貌专业。',
+          '要求：不编造进展；如信息不足，提出需要客户补充的具体信息；客户回复简洁、清晰、礼貌，不做无意义寒暄。',
           '- nextAction 说明下一步行动，如：等待客户提供截图、等待开发确认日志、可直接关闭等。',
           `案件摘要：${caseSummary}`,
           lastReply ? `上次回复：${lastReply}` : '',
